@@ -5,92 +5,108 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>IPTV, Радио и Игры</title>
 <style>
-  /* Фоновое изображение (замените URL) */
+  /* Фон (замените URL на свой JPEG) */
   body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: url('https://your-background-image-url.com/background.jpeg') center center / cover no-repeat fixed;
+    background: url('https://your-jpeg-image-url.com/image.jpeg') center center / cover no-repeat fixed;
     color: white;
     user-select: none;
-    overflow-x: hidden;
+    overflow-y: hidden; /* Удаляем вертикальную прокрутку */
   }
-  /* Шапка с кнопками по центру, градиент чёрно-серый */
+  /* Шапка с градиентом и центрированием */
   header {
-    position: fixed; top: 0; left: 0; right: 0;
+    position: fixed;
+    top: 0; left: 0; right: 0;
     height: 48px;
-    background: linear-gradient(90deg, #000000 0%, #555555 100%);
+    background: linear-gradient(90deg, #000, #555);
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
     z-index: 3000;
     user-select: none;
   }
+  /* Кнопки с индикатором точки */
   header button {
+    position: relative;
     min-width: 80px;
     padding: 8px 18px;
     background: linear-gradient(180deg, #222, #111);
     border: 1px solid #666;
-    border-radius: 5px;
+    border-radius: 6px;
     font-weight: bold;
     font-size: 1rem;
-    cursor: pointer;
     color: white;
+    cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
-    user-select: none;
   }
+  /* Индикатор круглая точка справа */
+  header button::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #444; /* точка неактивна */
+    pointer-events: none;
+  }
+  /* Активная кнопка и зелёная точка */
   header button.active {
-    background: linear-gradient(180deg, #bbb, #ddd);
+    background: linear-gradient(180deg, #ccc, #eee);
     color: #000;
   }
-  header button.recording {
-    background-color: #c00 !important;
-    color: white !important;
+  header button.active::after {
+    background: #4caf50; /* зелёная точка */
   }
-  /* Основной контейнер */
+
+  /* Удаляем тени у всех окон */
+  #tv-container, #radio-container, #games-overlay, #game-window {
+    box-shadow: none !important;
+  }
+
   main {
     margin-top: 48px;
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 14px;
     padding-bottom: 64px;
+    overflow: hidden;
   }
-  /* ТВ контейнер */
+
+  /* ТВ Плеер и список */
   #tv-container {
     display: none;
     flex-direction: column;
-    width: 360px;
-    max-height: 520px;
+    width: 900px; /* Заданная ширина */
     background: linear-gradient(180deg, #222, #111);
     border-radius: 8px;
-    box-shadow: 0 0 15px #000;
     user-select: none;
   }
   #tv-video {
-    width: 100%;
-    height: 200px;
+    width: 100%; /* Занимает всю ширину контейнера (900px) */
+    height: auto; /* Высота подстраивается под пропорции видео */
     background: black;
-    border-radius: 8px 8px 0 0;
     outline: none;
   }
   #tv-channels-list {
-    flex-grow: 1;
-    background: #0c0c0c;
-    padding: 4px 8px;
+    max-height: 320px; /* Ограничение высоты, чтобы не скроллился весь сайт */
     overflow-y: auto;
+    background: #0c0c0c;
     border-top: 1px solid #444;
     border-radius: 0 0 8px 8px;
-    max-height: 300px;
+    padding: 8px 0;
   }
   #tv-channels-list h3 {
+    margin: 6px auto;
+    width: 50%;
     text-align: center;
-    user-select: none;
-    margin: 8px auto 6px;
     font-weight: bold;
     border: 2px solid #555;
-    padding: 4px 0;
-    width: 60%;
     border-radius: 8px;
+    user-select: none;
   }
   #tv-channels-list h3.music {
     border-color: #4caf50;
@@ -99,27 +115,27 @@
     border-color: #2196f3;
   }
   #tv-channels-list .channel-item {
+    padding: 8px 0;
     text-align: center;
-    padding: 6px 0;
     cursor: pointer;
-    border-radius: 6px;
+    user-select: none;
+    border-radius: 5px;
   }
   #tv-channels-list .channel-item:hover {
     background-color: #333;
   }
   #tv-channels-list .channel-item.active {
-    font-weight: 700;
     background-color: #555;
+    font-weight: bold;
   }
-  /* Радио контейнер */
+
+  /* Радио */
   #radio-container {
     display: none;
     flex-direction: column;
     width: 360px;
-    max-height: 520px;
     background: linear-gradient(180deg, #222, #111);
     border-radius: 8px;
-    box-shadow: 0 0 15px #000;
     user-select: none;
   }
   #radio-player {
@@ -129,18 +145,18 @@
     outline: none;
   }
   #radio-list {
-    flex-grow: 1;
-    background: #0a0a0a;
-    padding: 8px 6px;
-    max-height: 300px;
+    max-height: 320px;
     overflow-y: auto;
+    background: #0a0a0a;
     border-top: 1px solid #444;
     border-radius: 0 0 8px 8px;
+    padding: 8px 0;
   }
   #radio-list .radio-item {
     text-align: center;
     padding: 10px 0;
     cursor: pointer;
+    user-select: none;
     border-radius: 5px;
   }
   #radio-list .radio-item:hover {
@@ -148,9 +164,10 @@
   }
   #radio-list .radio-item.active {
     background: #888888bb;
-    font-weight: 700;
+    font-weight: bold;
     color: #ddd;
   }
+
   /* Игры - всплывающее меню */
   #games-overlay {
     position: fixed;
@@ -160,10 +177,9 @@
     max-height: 75vh;
     background: linear-gradient(180deg, #222, #000);
     border-radius: 12px;
-    box-shadow: 0 0 30px #000;
+    color: white;
     display: flex;
     flex-direction: column;
-    color: white;
     user-select: none;
     z-index: 5000;
   }
@@ -173,7 +189,6 @@
   #games-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     padding: 10px 14px;
     font-weight: bold;
     font-size: 1.1rem;
@@ -181,28 +196,29 @@
   }
   #games-close {
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     color: #ccc;
-    user-select: none;
   }
   #games-close:hover {
     color: white;
   }
   #games-list {
-    flex-grow: 1;
     overflow-y: auto;
+    flex-grow: 1;
     padding: 12px 14px;
   }
   #games-list .game-item {
     padding: 12px 8px;
     text-align: center;
     cursor: pointer;
-    border-radius: 10px;
     border-bottom: 1px solid #555;
+    border-radius: 10px;
+    user-select: none;
   }
   #games-list .game-item:hover {
     background-color: #333;
   }
+
   /* Игровое окно */
   #game-window {
     position: fixed;
@@ -212,10 +228,10 @@
     height: 80vh;
     background: black;
     border-radius: 10px;
-    box-shadow: 0 0 40px #000;
     display: none;
     flex-direction: column;
     z-index: 6000;
+    user-select: none;
   }
   #game-window.show {
     display: flex;
@@ -229,7 +245,6 @@
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     color: #ddd;
-    user-select: none;
   }
   #game-topbar span.btn-icon {
     font-weight: bold;
@@ -237,6 +252,7 @@
     cursor: pointer;
     color: #aaa;
     line-height: 1;
+    user-select: none;
   }
   #game-topbar span.btn-icon:hover {
     color: white;
@@ -247,12 +263,11 @@
   #game-topbar span.tooltip:hover::after {
     content: attr(data-tooltip);
     position: absolute;
-    top: -28px;
-    left: 50%;
+    top: -28px; left: 50%;
     transform: translateX(-50%);
+    background: #444;
     padding: 3px 7px;
     border-radius: 4px;
-    background: #444;
     font-size: 0.75rem;
     white-space: nowrap;
     color: #eee;
@@ -261,10 +276,10 @@
   #game-iframe {
     flex-grow: 1;
     border: none;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
+    border-radius: 0 0 10px 10px;
     background: black;
   }
+
   /* Скроллбары */
   #tv-channels-list::-webkit-scrollbar,
   #radio-list::-webkit-scrollbar,
@@ -277,7 +292,8 @@
     background-color: #555;
     border-radius: 4px;
   }
-  /* Нижний правый мелкий шрифт */
+
+  /* Нижний правый мелкий текст */
   footer {
     position: fixed;
     bottom: 8px;
@@ -300,7 +316,7 @@
 
 <main>
   <section id="tv-container" role="region" aria-label="Телевизионный плеер и список каналов" tabindex="0">
-    <video id="tv-video" muted playsinline controls></video>
+    <video id="tv-video" playsinline controls></video>
     <div id="tv-channels-list" aria-label="Список телевизионных каналов" tabindex="0">
       <h3 class="music" tabindex="-1">_🎵_ МУЗЫКА _🎵_</h3>
       <div class="channel-item" tabindex="0" data-url="http://stream.mediawork.cz/retrotv/retrotvHQ1/playlist.m3u8">Retro TV</div>
@@ -334,7 +350,6 @@
   </section>
 </main>
 
-<!-- Игры -->
 <div id="games-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Меню Игры">
   <div id="games-header">
     <span>Выберите игру</span>
@@ -351,12 +366,11 @@
   </div>
 </div>
 
-<!-- Игровое окно -->
 <div id="game-window" role="region" aria-label="Окно Игры" aria-live="polite">
   <div id="game-topbar">
     <span id="game-minimize" role="button" tabindex="0" aria-label="Опустить окно ▽" class="btn-icon">▽</span>
     <span id="game-maximize" role="button" tabindex="0" aria-label="Вернуть окно △" class="btn-icon" style="display:none;">△</span>
-    <span id="game-sound-toggle" role="button" tabindex="0" aria-label="Подсказка: чтобы отключить звук — используйте настройки игры" class="btn-icon tooltip" data-tooltip="Отключить звук - в настройках игры">?</span>
+    <span id="game-sound-toggle" role="button" tabindex="0" aria-label="Подсказка: чтобы отключить звук — используйте настройки игры" class="btn-icon tooltip" data-tooltip="Отключить звук — в настройках игры" style="cursor: default;">?</span>
     <span id="game-fullscreen" role="button" tabindex="0" aria-label="Включить полноэкранный режим" class="btn-icon tooltip" data-tooltip="Полноэкранный режим">❏</span>
     <span id="game-fullscreen-exit" role="button" tabindex="0" aria-label="Выйти из полноэкранного режима" class="btn-icon tooltip" data-tooltip="Выйти из полноэкранного режима" style="display:none;">❏</span>
     <span id="game-close" role="button" tabindex="0" aria-label="Закрыть игру" class="btn-icon">✖</span>
@@ -364,15 +378,17 @@
   <iframe id="game-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups" allowfullscreen tabindex="0" frameborder="0"></iframe>
 </div>
 
-<footer>Проект сделан, придуман ?</footer>
+<footer>Проект сделан, придуман MUZER_play .</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.1/dist/hls.min.js"></script>
 <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 
 <script>
+  // Инициализация VK Bridge для VK Mini Apps
   vkBridge.send('VKWebAppInit');
 
   (() => {
+    // Получение ссылок на DOM-элементы
     const btnTv = document.getElementById('btn-tv');
     const btnRadio = document.getElementById('btn-radio');
     const btnGames = document.getElementById('btn-games');
@@ -398,96 +414,114 @@
     const gameFullscreenExit = document.getElementById('game-fullscreen-exit');
     const gameClose = document.getElementById('game-close');
 
-    let hls = null;
-    let currentTvUrl = null;
-    let currentRadioSrc = null;
-    let isRecording = false;
-    let mediaRecorder = null;
-    let recordedChunks = [];
+    let hls = null; // Переменная для экземпляра Hls.js
+    let currentTvUrl = null; // Текущий URL ТВ канала
+    let currentRadioSrc = null; // Текущий URL радиостанции
 
-    // Обновление активных кнопок
+    // Функция для сброса активного состояния кнопок в шапке
     function clearActiveButtons() {
       [btnTv, btnRadio, btnGames].forEach(btn => {
-        btn.classList.remove('active', 'recording');
+        btn.classList.remove('active');
         btn.setAttribute('aria-pressed', 'false');
       });
     }
-    // ТВ функции
+
+    // --- Функции ТВ-плеера ---
     function showTv() {
       tvContainer.style.display = 'flex';
-      radioContainer.style.display = 'none';
+      radioContainer.style.display = 'none'; // Скрываем радио
       clearActiveButtons();
       btnTv.classList.add('active');
       btnTv.setAttribute('aria-pressed', 'true');
-      gamesOverlay.classList.add('hidden');
+      gamesOverlay.classList.add('hidden'); // Скрываем меню игр
+      tvVideo.muted = false; // Включаем звук у ТВ-плеера
 
+      // Если нет текущего URL ТВ-канала, запускаем первый из списка
       if (!currentTvUrl) {
         const first = tvChannelsList.querySelector('.channel-item');
         if (first) playTvChannel(first.dataset.url, first);
       } else {
+        // Иначе возобновляем воспроизведение текущего канала
         playTvChannel(currentTvUrl, tvChannelsList.querySelector('.channel-item.active'));
       }
-      stopRadio();
+      stopRadio(); // Отключаем радио при включении ТВ
     }
+
     function playTvChannel(url, el) {
-      if (currentTvUrl === url) return;
+      if (currentTvUrl === url) return; // Если канал уже играет, ничего не делаем
       currentTvUrl = url;
+
+      // Сброс активного класса для всех каналов и установка для выбранного
       tvChannelsList.querySelectorAll('.channel-item').forEach(ch => ch.classList.remove('active'));
       if(el) el.classList.add('active');
 
+      // Инициализация или переключение Hls.js
       if (hls) {
-        hls.destroy();
+        hls.destroy(); // Уничтожаем предыдущий экземпляр Hls.js
         hls = null;
       }
+
+      // Проверка на нативную поддержку HLS (для Safari)
       if (tvVideo.canPlayType('application/vnd.apple.mpegurl')) {
         tvVideo.src = url;
         tvVideo.play().catch(() => {});
-      } else if (Hls.isSupported()) {
+      } else if (Hls.isSupported()) { // Использование Hls.js для других браузеров
         hls = new Hls();
         hls.loadSource(url);
         hls.attachMedia(tvVideo);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {tvVideo.play().catch(() => {});});
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          tvVideo.play().catch(() => {});
+        });
       } else {
+        // Fallback для браузеров без поддержки HLS и Hls.js (может не работать)
         tvVideo.src = url;
         tvVideo.play().catch(() => {});
       }
-      stopRadio();
+      stopRadio(); // Отключаем радио при включении ТВ
     }
+
     function stopTv() {
       if (hls) { hls.destroy(); hls = null; }
       if (!tvVideo.paused) tvVideo.pause();
       tvVideo.src = '';
       currentTvUrl = null;
-      btnTv.classList.remove('active', 'recording');
+      btnTv.classList.remove('active');
       btnTv.setAttribute('aria-pressed', 'false');
     }
-    // Радио функции
+
+    // --- Функции Радио-плеера ---
     function showRadio() {
       radioContainer.style.display = 'flex';
-      tvContainer.style.display = 'none';
+      tvContainer.style.display = 'none'; // Скрываем ТВ
       clearActiveButtons();
       btnRadio.classList.add('active');
       btnRadio.setAttribute('aria-pressed', 'true');
-      gamesOverlay.classList.add('hidden');
+      gamesOverlay.classList.add('hidden'); // Скрываем меню игр
 
+      // Если нет текущего URL радиостанции, запускаем первую из списка
       if (!currentRadioSrc) {
         const first = radioList.querySelector('.radio-item');
         if (first) playRadioStation(first.dataset.src, first);
       } else {
+        // Иначе возобновляем воспроизведение текущей станции
         playRadioStation(currentRadioSrc, radioList.querySelector('.radio-item.active'));
       }
-      stopTv();
+      stopTv(); // Отключаем ТВ при включении радио
     }
+
     function playRadioStation(src, el) {
-      if (currentRadioSrc === src) return;
+      if (currentRadioSrc === src) return; // Если станция уже играет, ничего не делаем
       currentRadioSrc = src;
+
+      // Сброс активного класса для всех станций и установка для выбранной
       radioList.querySelectorAll('.radio-item').forEach(r => r.classList.remove('active'));
       if(el) el.classList.add('active');
 
       radioPlayer.src = src;
       radioPlayer.play().catch(() => {});
-      stopTv();
+      stopTv(); // Отключаем ТВ при включении радио
     }
+
     function stopRadio() {
       if (!radioPlayer.paused) radioPlayer.pause();
       radioPlayer.src = '';
@@ -496,23 +530,27 @@
       btnRadio.setAttribute('aria-pressed', 'false');
       radioList.querySelectorAll('.radio-item').forEach(r => r.classList.remove('active'));
     }
-    // Игры меню
+
+    // --- Функции меню Игр ---
     function openGames() {
       gamesOverlay.classList.remove('hidden');
       gamesOverlay.focus();
       clearActiveButtons();
       btnGames.classList.add('active');
       btnGames.setAttribute('aria-pressed', 'true');
+      // ТВ и Радио остаются открытыми (игровое окно поверх)
     }
+
     function closeGames() {
       gamesOverlay.classList.add('hidden');
       btnGames.classList.remove('active');
       btnGames.setAttribute('aria-pressed', 'false');
     }
-    // Игровое окно
-    let gameMinimized = false;
-    let gameMuted = false;
-    let fullscreenState = false;
+
+    // --- Функции игрового окна ---
+    let gameMinimized = false; // Состояние: свёрнуто ли игровое окно
+    let gameMuted = false; // Состояние: заглушено ли игровое окно (для подсказки)
+    let fullscreenState = false; // Состояние: полноэкранный режим
 
     function openGame(url) {
       gameIframe.src = url;
@@ -520,27 +558,18 @@
       gameMinimized = false;
       gameMuted = false;
       fullscreenState = false;
-      updateGameControls();
-      // сброс стилей
-      gameWindow.style.width = '';
-      gameWindow.style.height = '';
-      gameWindow.style.bottom = '';
-      gameWindow.style.top = '50%';
-      gameWindow.style.left = '50%';
-      gameWindow.style.transform = 'translate(-50%, -50%)';
-      gameIframe.style.display = 'block';
-      gameMinimize.style.display = 'inline-block';
-      gameMaximize.style.display = 'none';
-      gameFullscreen.style.display = 'inline-block';
-      gameFullscreenExit.style.display = 'none';
-      closeGames();
+      // Сброс положения и размеров окна, если оно было свёрнуто
+      resetGameWindowPosition();
+      closeGames(); // Закрываем меню игр после запуска игры
     }
+
     function closeGame() {
       gameWindow.classList.remove('show');
-      gameIframe.src = '';
+      gameIframe.src = ''; // Очищаем src iframe
     }
+
     function minimizeGame() {
-      if (gameMinimized) return;
+      if (gameMinimized) return; // Если уже свёрнуто, ничего не делаем
       gameMinimized = true;
       gameWindow.style.top = 'auto';
       gameWindow.style.bottom = '6px';
@@ -548,126 +577,113 @@
       gameWindow.style.width = '420px';
       gameWindow.style.height = '50px';
       gameWindow.style.transform = 'translateX(-50%)';
-      gameIframe.style.display = 'none';
+      gameIframe.style.display = 'none'; // Скрываем iframe
       gameMinimize.style.display = 'none';
       gameMaximize.style.display = 'inline-block';
     }
+
     function maximizeGame() {
-      if (!gameMinimized) return;
+      if (!gameMinimized) return; // Если не свёрнуто, ничего не делаем
       gameMinimized = false;
+      resetGameWindowPosition(); // Возвращаем в исходное положение
+      gameIframe.style.display = 'block'; // Показываем iframe
+      gameMinimize.style.display = 'inline-block';
+      gameMaximize.style.display = 'none';
+    }
+
+    // Сброс положения и размеров игрового окна к стандартным
+    function resetGameWindowPosition() {
       gameWindow.style.top = '50%';
-      gameWindow.style.bottom = 'auto';
+      gameWindow.style.bottom = '';
       gameWindow.style.left = '50%';
       gameWindow.style.width = '80vw';
       gameWindow.style.height = '80vh';
       gameWindow.style.transform = 'translate(-50%, -50%)';
-      gameIframe.style.display = 'block';
-      gameMinimize.style.display = 'inline-block';
-      gameMaximize.style.display = 'none';
     }
+
+    // Функция для "отключения" звука (визуальный индикатор, так как в игре звук не контролируется)
     function toggleSound() {
       gameMuted = !gameMuted;
-      try {
-        gameIframe.contentWindow.postMessage({action:'mute',muted:gameMuted}, '*');
-      } catch {}
-      updateGameControls();
+      // Подсказка: изменить звук в самой игре, иконка неактивна для клика
+      // Здесь можно было бы отправить postMessage в iframe, если бы игры поддерживали mute
+      updateGameControlsVisual();
     }
-    function updateGameControls() {
-      gameSoundToggle.style.color = gameMuted ? '#cc0000' : '#aaa';
+
+    // Обновление визуального состояния иконки звука
+    function updateGameControlsVisual() {
+      gameSoundToggle.style.color = gameMuted ? '#c00' : '#aaa'; // Красный или серый цвет иконки
     }
+
+    // Полноэкранный режим для игрового окна
     function enterFullscreen() {
-      if (gameWindow.requestFullscreen) {
+      if(gameWindow.requestFullscreen) {
         gameWindow.requestFullscreen();
         fullscreenState = true;
         gameFullscreen.style.display = 'none';
         gameFullscreenExit.style.display = 'inline-block';
       }
     }
+
     function exitFullscreen() {
-      if (document.exitFullscreen) {
+      if(document.exitFullscreen) {
         document.exitFullscreen();
         fullscreenState = false;
         gameFullscreen.style.display = 'inline-block';
         gameFullscreenExit.style.display = 'none';
       }
     }
+
+    // Обработчик события изменения полноэкранного режима документа
     document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) {
+      if(!document.fullscreenElement){ // Если вышли из полноэкранного режима
         fullscreenState = false;
         gameFullscreen.style.display = 'inline-block';
         gameFullscreenExit.style.display = 'none';
       }
     });
-    // Запись видео ТВ (двойной клик кнопки ТВ)
-    btnTv.addEventListener('dblclick', () => {
-      if (tvContainer.style.display === 'flex') {
-        if (isRecording) stopRecording();
-        else startRecording();
-      }
-    });
-    function startRecording() {
-      if (!tvVideo.captureStream) {
-        alert('Ваш браузер не поддерживает запись видео.');
-        return;
-      }
-      const stream = tvVideo.captureStream();
-      recordedChunks = [];
-      mediaRecorder = new MediaRecorder(stream, {mimeType: 'video/webm; codecs=vp8'});
-      mediaRecorder.ondataavailable = e => {
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
-      mediaRecorder.onstop = saveRecording;
-      mediaRecorder.start();
-      isRecording = true;
-      btnTv.classList.add('recording');
-    }
-    function stopRecording() {
-      if (mediaRecorder && isRecording) mediaRecorder.stop();
-      isRecording = false;
-      btnTv.classList.remove('recording');
-    }
-    function saveRecording() {
-      const blob = new Blob(recordedChunks, {type: 'video/webm'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `recording_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.webm`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 150);
-    }
-    // Слушатели
+
+    // --- Обработчики событий для кнопок шапки ---
     btnTv.addEventListener('click', showTv);
     btnRadio.addEventListener('click', showRadio);
     btnGames.addEventListener('click', () => {
       if (gamesOverlay.classList.contains('hidden')) openGames();
       else closeGames();
     });
+
+    // --- Обработчики для списков ТВ и Радио (только левый клик) ---
     tvChannelsList.addEventListener('click', e => {
+      if(e.button !== 0) return; // Проверяем, что это левая кнопка мыши
       const target = e.target.closest('.channel-item');
-      if (target) playTvChannel(target.dataset.url, target);
+      if(target) playTvChannel(target.dataset.url, target);
     });
+
     radioList.addEventListener('click', e => {
+      if(e.button !== 0) return; // Проверяем, что это левая кнопка мыши
       const target = e.target.closest('.radio-item');
-      if (target) playRadioStation(target.dataset.src, target);
+      if(target) playRadioStation(target.dataset.src, target);
     });
+
+    // --- Обработчики для меню игр ---
     gamesClose.addEventListener('click', closeGames);
     gamesList.addEventListener('click', e => {
+      if(e.button !== 0) return; // Проверяем, что это левая кнопка мыши
       const target = e.target.closest('.game-item');
-      if (target) openGame(target.dataset.url);
+      if(target) openGame(target.dataset.url);
     });
+
+    // --- Обработчики для кнопок управления игровым окном ---
     gameClose.addEventListener('click', closeGame);
     gameMinimize.addEventListener('click', minimizeGame);
     gameMaximize.addEventListener('click', maximizeGame);
-    gameSoundToggle.addEventListener('click', toggleSound);
+    // Кнопка звука для игры теперь некликабельна, только подсказка
+    // gameSoundToggle.addEventListener('click', toggleSound); // Удаляем обработчик клика
     gameFullscreen.addEventListener('click', enterFullscreen);
     gameFullscreenExit.addEventListener('click', exitFullscreen);
-    // Автозапуск радио
+
+    // Автоматический запуск радио при загрузке страницы
     window.addEventListener('load', showRadio);
   })();
 </script>
+
 </body>
 </html>
