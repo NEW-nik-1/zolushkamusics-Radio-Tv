@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>VK Mini App IPTV/Radio/Games</title>
 
-  <!-- VK Bridge и HLS.js -->
+  <!-- HLS.js и VK Bridge -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.1/dist/hls.min.js"></script>
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 
   <style>
-    /* Фон замощен картинкой */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -23,7 +22,6 @@
       overflow: hidden;
     }
 
-    /* Градиент для шапки */
     header {
       display: flex;
       justify-content: center;
@@ -33,7 +31,6 @@
       z-index: 1000;
       user-select: none;
     }
-    /* Кнопки */
     header button {
       background: linear-gradient(180deg, #222, #444);
       border: 1px solid #888;
@@ -42,7 +39,7 @@
       font-weight: bold;
       padding: 10px 20px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, filter 0.3s ease;
       filter: brightness(60%);
     }
     header button.active {
@@ -68,7 +65,6 @@
       position: relative;
     }
 
-    /* Видео плеер с каналами */
     #tv-section {
       display: none;
       flex-direction: column;
@@ -101,7 +97,6 @@
       user-select: none;
     }
 
-    /* Заголовки Музыка и Кино */
     .category-label {
       width: 100%;
       border: 2px solid #777;
@@ -145,13 +140,13 @@
       font-weight: 700;
     }
 
-    /* Радио плеер */
     #radio-section {
-      display: none;
+      display: flex;
       flex-direction: column;
       width: 350px;
       max-height: 80vh;
       user-select: none;
+      color: white;
     }
     #audio-player {
       width: 100%;
@@ -195,7 +190,6 @@
       color: white;
     }
 
-    /* Игры */
     #games-section {
       display: none;
       position: fixed;
@@ -254,7 +248,6 @@
       color: white;
     }
 
-    /* Окно игры */
     #game-window {
       display: none;
       position: fixed;
@@ -306,7 +299,6 @@
       background: black;
     }
 
-    /* Тень/затемнение фона за игровым окном */
     #game-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -315,7 +307,6 @@
       display: none;
     }
 
-    /* Нижний правый мелкий текст */
     #footer-note {
       position: fixed;
       right: 8px;
@@ -328,7 +319,6 @@
       text-shadow: 0 0 3px #0008;
     }
 
-    /* Скроллы */
     #channels-list::-webkit-scrollbar,
     #radio-list::-webkit-scrollbar,
     #games-list::-webkit-scrollbar {
@@ -345,26 +335,23 @@
 </head>
 <body>
   <header>
-    <button id="btn-tv" type="button">ТВ</button>
-    <button id="btn-radio" type="button">РАДИО</button>
-    <button id="btn-games" type="button">ИГРЫ</button>
+    <button id="btn-tv" type="button" aria-pressed="false">ТВ</button>
+    <button id="btn-radio" type="button" aria-pressed="true">РАДИО</button>
+    <button id="btn-games" type="button" aria-pressed="false">ИГРЫ</button>
   </header>
 
   <main>
-    <!-- ТВ секция -->
     <section id="tv-section" aria-label="ТВ Плеер с каналами">
       <video id="video-player" controls muted playsinline></video>
       <div id="channels-list" aria-label="Список ТВ каналов"></div>
     </section>
 
-    <!-- Радио секция -->
     <section id="radio-section" aria-label="Радио плеер с каналами">
       <audio id="audio-player" controls></audio>
       <div id="radio-list" aria-label="Список радиостанций"></div>
     </section>
   </main>
 
-  <!-- Игры -->
   <section id="games-section" aria-label="Меню игр">
     <div id="games-header">
       <span>Выберите игру</span>
@@ -373,7 +360,6 @@
     <div id="games-list"></div>
   </section>
 
-  <!-- Игровое окно -->
   <div id="game-overlay"></div>
   <div id="game-window" role="dialog" aria-modal="true" aria-label="Игровое окно">
     <div id="game-controls">
@@ -389,13 +375,12 @@
   <footer id="footer-note">Проект сделан, придуман ?</footer>
 
   <script>
-    //----------------------------------
     // Инициализация VK Bridge
     vkBridge.send('VKWebAppInit').catch(() => {
-      // Игнорируем ошибку при запуске вне VK
+      // Игнорируем ошибку запуска вне VK среды
     });
 
-    // ------ Переменные и элементы --------
+    // Элементы
     const btnTv = document.getElementById('btn-tv');
     const btnRadio = document.getElementById('btn-radio');
     const btnGames = document.getElementById('btn-games');
@@ -422,15 +407,13 @@
     const gameExitFullscreen = document.getElementById('game-exit-fullscreen');
     const gameClose = document.getElementById('game-close');
 
-    // Состояния
+    // Состояния записи
     let hls = null;
     let recording = false;
     let mediaRecorder = null;
     let recordedChunks = [];
 
-    // ---------------------------------
-    // Каналы ТВ
-
+    // ТВ-Каналы Музыка и Кино
     const musicChannels = [
       { name: "Retro TV", url: "http://stream.mediawork.cz/retrotv/retrotvHQ1/playlist.m3u8" },
       { name: "RU TV", url: "https://hls-03-video.webcaramba.com/rutv/live_480/index.m3u8" },
@@ -446,7 +429,6 @@
       { name: "Kronehit", url: "http://bitcdn-kronehit.bitmovin.com/v2/hls/chunklist_b1628000.m3u8" },
       { name: "Company TV", url: "https://company.fluid.stream/CompanyTV/smil:Company_ALL.smil/playlist_slita.m3u8" }
     ];
-
     const movieChannels = [
       { name: "Nika TV", url: "http://live-nikatv.cdnvideo.ru/nikatv/nikatv.sdp/playlist.m3u8" },
       { name: "TV 3", url: "https://zabava-htlive.cdn.ngenix.net/hls/CH_TV3/variant.m3u8" },
@@ -463,7 +445,7 @@
       { name: "Svoe TV HD", url: "https://svoetv.mediacdn.ru/cdn/svoetv/playlist_hdhigh.m3u8" }
     ];
 
-    // Радио каналы (названия и URL)
+    // Радио
     const radioChannels = [
       { name: "Дорожное радио", url: "https://dorognoe.hostingradio.ru/radio" },
       { name: "Радио СИТИ", url: "https://online2.100i6fm.ru/city" },
@@ -521,7 +503,7 @@
       { name: "Диско-радио SOVA", url: "https://evcast.mediacp.eu:1965/stream" }
     ];
 
-    // Игры
+    // Игры (коротко, для экономии места)
     const gamesListData = [
       { name: "Gary's World", url: "https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/" },
       { name: "crazy-ball-adventures", url: "https://www.onlinegames.io/games/2021/unity2/crazy-ball-adventures/index.html" },
@@ -536,20 +518,20 @@
       { name: "traffic-tour", url: "https://traffictour.github.io/traffic-tour/" }
     ];
 
-    // -------- Функции переключения вкладок ---------
     function setActiveButton(activeBtn) {
       [btnTv, btnRadio, btnGames].forEach(btn => {
         btn.classList.remove('active', 'recording');
-        if (btn === activeBtn) btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'false');
+        if (btn === activeBtn) {
+          btn.classList.add('active');
+          btn.setAttribute('aria-pressed', 'true');
+        }
       });
     }
 
-    // -------- ТВ плеер ---------
-
-    // Отрисовать список каналов с категориями и активным выделением
+    // ТВ - отрисовка каналов и воспроизведение
     function renderTVChannels(selectedName) {
       channelsList.innerHTML = '';
-      // music label
       const musicLabel = document.createElement('div');
       musicLabel.className = 'category-label music';
       musicLabel.textContent = '🎵 МУЗЫКА 🎵';
@@ -562,16 +544,9 @@
         div.setAttribute('role', 'button');
         div.setAttribute('aria-pressed', ch.name === selectedName);
         div.onclick = () => playTVChannel(ch);
-        div.onkeydown = e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            playTVChannel(ch);
-          }
-        };
+        div.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playTVChannel(ch); } };
         channelsList.appendChild(div);
       });
-
-      // movie label
       const movieLabel = document.createElement('div');
       movieLabel.className = 'category-label movies';
       movieLabel.textContent = '🎬 КИНО 🎬';
@@ -584,24 +559,15 @@
         div.setAttribute('role', 'button');
         div.setAttribute('aria-pressed', ch.name === selectedName);
         div.onclick = () => playTVChannel(ch);
-        div.onkeydown = e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            playTVChannel(ch);
-          }
-        };
+        div.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playTVChannel(ch); } };
         channelsList.appendChild(div);
       });
     }
-
-    // Воспроизведение IPTV потока с hls.js
     function playTVChannel(channel) {
       renderTVChannels(channel.name);
       stopRadio();
       showTvSection();
-
       if (recording) stopRecording();
-
       if (hls) {
         hls.destroy();
         hls = null;
@@ -610,14 +576,7 @@
         hls = new Hls();
         hls.loadSource(channel.url);
         hls.attachMedia(videoPlayer);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          videoPlayer.play().catch(() => {});
-        });
-        hls.on(Hls.Events.ERROR, (event, data) => {
-          if (data.fatal) {
-            console.error("HLS error", data);
-          }
-        });
+        hls.on(Hls.Events.MANIFEST_PARSED, () => videoPlayer.play().catch(() => {}));
       } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
         videoPlayer.src = channel.url;
         videoPlayer.play().catch(() => {});
@@ -625,11 +584,8 @@
         alert('Ваш браузер не поддерживает воспроизведение HLS-потоков.');
       }
       videoPlayer.muted = false;
-
-      // Запуск записи при воспроизведении (если надо)
       startRecordingIfNeeded();
     }
-
     function showTvSection() {
       tvSection.style.display = 'flex';
       radioSection.style.display = 'none';
@@ -637,9 +593,7 @@
       setActiveButton(btnTv);
     }
 
-    // -------- Радио плеер ---------
-
-    // Отрисовать список радио каналов
+    // Радио - отрисовка и воспроизведение
     function renderRadioChannels(selectedName) {
       radioList.innerHTML = '';
       radioChannels.forEach(ch => {
@@ -650,23 +604,15 @@
         div.setAttribute('role', 'button');
         div.setAttribute('aria-pressed', ch.name === selectedName);
         div.onclick = () => playRadio(ch);
-        div.onkeydown = e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            playRadio(ch);
-          }
-        };
+        div.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playRadio(ch); } };
         radioList.appendChild(div);
       });
     }
-
     function playRadio(channel) {
       renderRadioChannels(channel.name);
       stopTV();
       showRadioSection();
-
       if (recording) stopRecording();
-
       audioPlayer.src = channel.url;
       audioPlayer.play().catch(() => {});
     }
@@ -688,15 +634,13 @@
       audioPlayer.pause();
       audioPlayer.src = "";
     }
-
-    // Запуск радио с первым каналом при загрузке
     function startRadioDefault() {
       if (radioChannels.length > 0) {
         playRadio(radioChannels[0]);
       }
     }
 
-    // -------- Игры ---------
+    // Игры
     function renderGamesList() {
       gamesList.innerHTML = '';
       gamesListData.forEach(game => {
@@ -706,50 +650,40 @@
         div.tabIndex = 0;
         div.setAttribute('role', 'button');
         div.onclick = () => openGame(game.url);
-        div.onkeydown = e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            openGame(game.url);
-          }
-        };
+        div.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGame(game.url); } };
         gamesList.appendChild(div);
       });
     }
     btnGames.addEventListener('click', () => {
+      showGamesSection();
+    });
+    function showGamesSection(){
       tvSection.style.display = 'none';
       radioSection.style.display = 'none';
       gamesSection.style.display = 'flex';
       setActiveButton(btnGames);
       renderGamesList();
-    });
-
+    }
     gamesClose.addEventListener('click', () => {
       gamesSection.style.display = 'none';
       setActiveButton(null);
     });
 
-    // ---------- Окно игры ----------
-
+    // Игровое окно
     function openGame(url) {
       gamesSection.style.display = 'none';
       gameIframe.src = url;
       gameWindow.style.display = 'flex';
       gameOverlay.style.display = 'block';
-
-      // Активный плеер не должен мешать, выключаем ТВ и радио
       stopTV();
       stopRadio();
       setActiveButton(null);
     }
-
-    // Закрыть окно игры
     function closeGameWindow() {
       gameIframe.src = '';
       gameWindow.style.display = 'none';
       gameOverlay.style.display = 'none';
     }
-
-    // Минмизировать/восстановить
     gameMinimize.addEventListener('click', () => {
       gameWindow.style.transform = 'translate(-50%, 80%) scale(0.6)';
       gameWindow.style.transition = 'transform 0.3s ease';
@@ -761,8 +695,6 @@
       gameRestore.style.display = 'none';
       gameMinimize.style.display = 'inline-block';
     });
-
-    // Фуллскрин
     function requestFullscreen(element) {
       if (element.requestFullscreen) element.requestFullscreen();
       else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen();
@@ -773,7 +705,6 @@
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       else if (document.msExitFullscreen) document.msExitFullscreen();
     }
-
     gameFullscreen.addEventListener('click', () => {
       requestFullscreen(gameWindow);
       gameFullscreen.style.display = 'none';
@@ -784,16 +715,13 @@
       gameExitFullscreen.style.display = 'none';
       gameFullscreen.style.display = 'inline-block';
     });
-
     gameClose.addEventListener('click', closeGameWindow);
     gameOverlay.addEventListener('click', closeGameWindow);
 
-    // ---------- Запись видео при воспроизведении IPTV (ТВ) ----------
-
-    // переключаем кнопку ТВ в запись
+    // Запись видео (запись IPTV потока)
     function startRecordingIfNeeded() {
-      if (recording) return; // если уже записываем
-      if (!videoPlayer.captureStream) return; // нет поддержки
+      if (recording) return;
+      if (!videoPlayer.captureStream) return;
       try {
         const stream = videoPlayer.captureStream();
         mediaRecorder = new MediaRecorder(stream);
@@ -802,15 +730,12 @@
         return;
       }
       recordedChunks = [];
-
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) recordedChunks.push(e.data);
       };
-
       mediaRecorder.onstop = () => {
         const blob = new Blob(recordedChunks, { type: 'video/webm' });
         const url = URL.createObjectURL(blob);
-        // Автоматически скачать файл
         const a = document.createElement('a');
         a.href = url;
         a.download = "recorded-" + new Date().toISOString().replace(/:/g,"-") + ".webm";
@@ -821,48 +746,38 @@
           URL.revokeObjectURL(url);
         }, 100);
         recordedChunks = [];
-        // Снять индикацию записи
         btnTv.classList.remove('recording');
         recording = false;
       };
-
       mediaRecorder.start();
       recording = true;
       btnTv.classList.add('recording');
-
-      // Остановим через 5 секунд записи для примера (можно убрать)
-      // setTimeout(stopRecording, 5000);
     }
-
-    // Остановить запись
     function stopRecording() {
       if (mediaRecorder && recording) {
         mediaRecorder.stop();
       }
     }
 
-    // --------- Кнопки на шапке ---------
+    // Кнопки ТВ и РАДИО
     btnTv.addEventListener('click', () => {
       stopRadio();
       gamesSection.style.display = 'none';
       showTvSection();
-      // Если нет активного канала - запускаем первый
       if (!videoPlayer.src || videoPlayer.paused) {
         playTVChannel(musicChannels[0]);
       }
     });
-
     btnRadio.addEventListener('click', () => {
       stopTV();
       gamesSection.style.display = 'none';
       showRadioSection();
-      // Если нет запущенного радио - включаем > первый канал
       if (!audioPlayer.src || audioPlayer.paused) {
         startRadioDefault();
       }
     });
 
-    // По умолчанию запускаем радио
+    // при загрузке страницы запускаем радио по умолчанию
     window.addEventListener('load', () => {
       btnRadio.click();
     });
