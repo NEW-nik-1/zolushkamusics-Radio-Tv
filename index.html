@@ -164,7 +164,9 @@
   }
   
   /* CHAT под радио */
-  #volnorez_chat {
+   #volnorez_chat {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
     margin-top: 10px;
     width: 750px;
     height: 350px;
@@ -172,7 +174,9 @@
     border: 1px solid #666;
     border-radius: 6px;
     background: #f0f0f0;
+    overflow: hidden !important; /* УДАЛИТЬ любой скролл */
   }
+
 
   /* Игры */
   #games-overlay {
@@ -324,9 +328,13 @@
   <section id="radio-player" aria-label="Радиоплеер">
     <audio id="radio-audio" controls preload="none"></audio>
     <div id="radio-list" role="listbox" tabindex="0"></div>
-    <div id="volnorez_chat" data-code="001f69a7" data-skin-params="'panel_clr':'213,213,213','ib_clr':'245,245,245','msgbg_clr':'234,234,234','omsgbg_clr':'225,225,225','icon_clr':'150,150,150','dj_clr':'72,191,53'" data-skin="skin_4">
-	<script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
+    <div id="volnorez_chat" style="width:900px; height:600px; overflow-y:auto;"
+     data-code="001f69a7"
+     data-skin-params="'panel_clr':'213,213,213','ib_clr':'245,245,245','msgbg_clr':'234,234,234','omsgbg_clr':'225,225,225','icon_clr':'150,150,150','dj_clr':'72,191,53'"
+     data-skin="skin_4">
+  <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
 </div>
+
 
   </section>
 </main>
