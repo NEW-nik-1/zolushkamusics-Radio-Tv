@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DJ Room с играми и чатом</title>
+<title>DJ Room с играми и визуализацией</title>
 <style>
   body {
     margin: 0;
@@ -50,6 +50,11 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+  }
+  #artSpectrum {
+    width: 120px;
+    height: 80px;
+    display: block;
   }
   .info-box {
     flex: 1;
@@ -176,16 +181,24 @@
     opacity: 0;
     pointer-events: none;
   }
-  /* Канвас для визуализации в art */
-  #artSpectrum {
-    width: 120px;
-    height: 80px;
+
+  /* основной canvas визуализации звука для большой области */
+
+  #spectrum {
+    width: 100%;
+    height: 50px;
     display: block;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    margin-bottom: 24px;
   }
 </style>
 </head>
 <body>
 <div class="container">
+
+  <canvas id="spectrum" data-tooltip="Звуковой спектр"></canvas>
+
   <div class="main">
     <div class="left-col">
       <div class="wrap" title="Радио плеер: управление воспроизведением">
@@ -259,9 +272,9 @@ const minimizeGame = document.getElementById('minimizeGame');
 const restoreGame = document.getElementById('restoreGame');
 
 let audioCtx, analyser, source, freqData;
-let artAudioCtx, artAnalyser, artSource, artFreqData;
+let artCtx, artCanvas, artAnalyser, artFreqData;
 
-playBtn.addEventListener('click', () => {
+function initAudio() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioCtx.createAnalyser();
@@ -270,37 +283,26 @@ playBtn.addEventListener('click', () => {
     analyser.connect(audioCtx.destination);
     analyser.fftSize = 1024;
     freqData = new Uint8Array(analyser.frequencyBinCount);
-    drawSpectrum();
   }
-  if (!artAudioCtx) {
-    artAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    artAnalyser = artAudioCtx.createAnalyser();
-    artSource = artAudioCtx.createMediaElementSource(audio);
-    artSource.connect(artAnalyser);
-    artAnalyser.connect(artAudioCtx.destination);
-    artAnalyser.fftSize = 256;
-    artFreqData = new Uint8Array(artAnalyser.frequencyBinCount);
-    drawArtSpectrum();
-  }
-  if (audio.paused) {
-    audio.play();
-    playBtn.textContent = '⏸ Pause';
-  } else {
-    audio.pause();
-    playBtn.textContent = '▶ Play';
-  }
-});
 
-const spectrumCanvas = document.getElementById('spectrum');
-const spectrumCtx = spectrumCanvas.getContext('2d');
+  if (!artCtx) {
+    artCanvas = document.getElementById('artSpectrum');
+    artCtx = artCanvas.getContext('2d');
+
+    artAnalyser = analyser;
+    artFreqData = freqData;
+  }
+}
 
 function drawSpectrum(){
   requestAnimationFrame(drawSpectrum);
   if (!analyser) return;
   analyser.getByteFrequencyData(freqData);
-  const w = spectrumCanvas.width = spectrumCanvas.offsetWidth;
-  const h = spectrumCanvas.height = spectrumCanvas.offsetHeight;
-  spectrumCtx.clearRect(0, 0, w, h);
+  const canvas = document.getElementById('spectrum');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width = canvas.offsetWidth;
+  const h = canvas.height = canvas.offsetHeight;
+  ctx.clearRect(0, 0, w, h);
 
   const sampleRate = audioCtx.sampleRate;
   const binCount = analyser.frequencyBinCount;
@@ -321,19 +323,16 @@ function drawSpectrum(){
     const x = i * barWidth;
     const y = h - barHeight;
 
-    const gradient = spectrumCtx.createLinearGradient(0, y, 0, y + barHeight);
+    const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
     gradient.addColorStop(0, '#f59e0b');
     gradient.addColorStop(1, '#84cc16');
-    spectrumCtx.fillStyle = gradient;
+    ctx.fillStyle = gradient;
 
-    spectrumCtx.fillRect(x, y, barWidth - 2, barHeight);
+    ctx.fillRect(x, y, barWidth - 2, barHeight);
   }
 }
 
-const artCanvas = document.getElementById('artSpectrum');
-const artCtx = artCanvas.getContext('2d');
-
-function drawArtSpectrum(){
+function drawArtSpectrum() {
   requestAnimationFrame(drawArtSpectrum);
   if (!artAnalyser) return;
   artAnalyser.getByteFrequencyData(artFreqData);
@@ -341,7 +340,7 @@ function drawArtSpectrum(){
   const height = artCanvas.height;
   artCtx.clearRect(0, 0, width, height);
 
-  const sampleRate = artAudioCtx.sampleRate;
+  const sampleRate = audioCtx.sampleRate;
   const binCount = artAnalyser.frequencyBinCount;
   const freqStep = (sampleRate / 2) / binCount;
 
@@ -369,17 +368,22 @@ function drawArtSpectrum(){
   }
 }
 
-const closeGamePopupLeft = document.getElementById('closeGamePopupLeft');
-const minimizeGame = document.getElementById('minimizeGame');
-const restoreGame = document.getElementById('restoreGame');
-const gamePopupLeft = document.getElementById('gamePopupLeft');
-const gameIframeLeft = document.getElementById('gameIframeLeft');
-const gamePopupTitleLeft = document.getElementById('gamePopupTitleLeft');
-const gamesHeaderBtn = document.querySelector('.games-header');
-const gamesList = document.querySelector('.games-list');
+playBtn.addEventListener('click', () => {
+  initAudio();
+
+  if (audio.paused) {
+    audio.play();
+    playBtn.textContent = '⏸ Pause';
+    drawSpectrum();
+    drawArtSpectrum();
+  } else {
+    audio.pause();
+    playBtn.textContent = '▶ Play';
+  }
+});
 
 gamesHeaderBtn.addEventListener('click', () => {
-  gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
+  gamesList.style.display = gamesList.style.display === 'block' ? 'none' : 'block';
 });
 
 document.querySelectorAll('.games-list a').forEach(el => {
@@ -387,9 +391,7 @@ document.querySelectorAll('.games-list a').forEach(el => {
     e.preventDefault();
     const name = el.dataset.name;
     const url = el.dataset.url;
-    // Скрываем список игр при выборе
     gamesList.style.display = 'none';
-    // Показываем окно игры слева
     gamePopupTitleLeft.textContent = name;
     gameIframeLeft.src = url;
     gamePopupLeft.style.display = 'flex';
