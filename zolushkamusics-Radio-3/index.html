@@ -139,10 +139,11 @@
     z-index: 1000;
     display: none;
     flex-direction: column;
-    transition: height 0.3s ease;
+    transition: height 0.3s ease, top 0.3s ease;
   }
   #gamePopupLeft.minimized {
     height: 40px !important;
+    top: 50px !important;
   }
   #gamePopupLeft > div.header {
     display: flex;
@@ -151,6 +152,10 @@
     background: #222;
     padding: 10px;
     font-weight: bold;
+  }
+  .window-controls {
+    display: flex;
+    align-items: center;
   }
   .window-controls button {
     background: none;
@@ -264,10 +269,13 @@ document.querySelectorAll('.games-list a').forEach(el => {
     e.preventDefault();
     const name = el.dataset.name;
     const url = el.dataset.url;
+    // Скрываем список игр при выборе
     gamesList.style.display = 'none';
+    // Показываем окно игры слева
     gamePopupTitleLeft.textContent = name;
     gameIframeLeft.src = url;
     gamePopupLeft.style.display = 'flex';
+    // Восстанавливаем окно, если было свернуто
     restoreGame.style.display = 'none';
     minimizeGame.style.display = 'inline-block';
     gamePopupLeft.classList.remove('minimized');
@@ -277,7 +285,8 @@ document.querySelectorAll('.games-list a').forEach(el => {
 
 minimizeGame.addEventListener('click', () => {
   gameIframeLeft.style.display = 'none';
-  gamePopupLeft.style.height = '40px';
+  gamePopupLeft.style.height = '40px'; // только заголовок видно
+  gamePopupLeft.style.top = '50px'; // поднимаем полоску выше
   minimizeGame.style.display = 'none';
   restoreGame.style.display = 'inline-block';
   gamePopupLeft.classList.add('minimized');
@@ -285,7 +294,8 @@ minimizeGame.addEventListener('click', () => {
 
 restoreGame.addEventListener('click', () => {
   gameIframeLeft.style.display = 'block';
-  gamePopupLeft.style.height = '400px';
+  gamePopupLeft.style.height = '400px'; // исходная высота
+  gamePopupLeft.style.top = '70px'; // исходное положение сверху
   restoreGame.style.display = 'none';
   minimizeGame.style.display = 'inline-block';
   gamePopupLeft.classList.remove('minimized');
