@@ -29,6 +29,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    position: relative;
   }
   .wrap {
     background: rgba(255,255,255,0.03);
@@ -124,10 +125,10 @@
     overflow: hidden;
     background: #111;
   }
-  #gamePopupRight {
+  #gamePopupLeft {
     position: fixed;
     top: 70px;
-    right: 10px;
+    left: 210px;
     width: 600px;
     height: 400px;
     background: #111;
@@ -138,8 +139,12 @@
     z-index: 1000;
     display: none;
     flex-direction: column;
+    transition: height 0.3s ease;
   }
-  #gamePopupRight > div.header {
+  #gamePopupLeft.minimized {
+    height: 40px !important;
+  }
+  #gamePopupLeft > div.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -147,17 +152,24 @@
     padding: 10px;
     font-weight: bold;
   }
-  #gamePopupRight button.close-btn {
+  .window-controls button {
     background: none;
     border: none;
     color: #eee;
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
+    margin-left: 8px;
+    user-select: none;
   }
-  #gamePopupRight iframe {
+  #gamePopupLeft iframe {
     border: none;
     width: 100%;
     height: calc(100% - 40px);
+    transition: opacity 0.3s ease;
+  }
+  #gamePopupLeft.minimized iframe {
+    opacity: 0;
+    pointer-events: none;
   }
 </style>
 </head>
@@ -206,12 +218,16 @@
       </div>
     </div>
   </div>
-  <div id="gamePopupRight">
+  <div id="gamePopupLeft">
     <div class="header">
-      <span id="gamePopupTitleRight">Игра</span>
-      <button class="close-btn" id="closeGamePopupRight" title="Закрыть окно">×</button>
+      <span id="gamePopupTitleLeft">Игра</span>
+      <div class="window-controls">
+        <button id="minimizeGame" title="Свернуть окно">–</button>
+        <button id="restoreGame" title="Развернуть окно" style="display:none;">□</button>
+        <button class="close-btn" id="closeGamePopupLeft" title="Закрыть окно">×</button>
+      </div>
     </div>
-    <iframe id="gameIframeRight" src=""></iframe>
+    <iframe id="gameIframeLeft" src=""></iframe>
   </div>
 </div>
 
@@ -222,10 +238,12 @@ const audio = document.getElementById('audio');
 const playBtn = document.getElementById('playBtn');
 const gamesHeaderBtn = document.querySelector('.games-header');
 const gamesList = document.querySelector('.games-list');
-const gamePopupRight = document.getElementById('gamePopupRight');
-const gameIframeRight = document.getElementById('gameIframeRight');
-const gamePopupTitleRight = document.getElementById('gamePopupTitleRight');
-const closeGamePopupRight = document.getElementById('closeGamePopupRight');
+const gamePopupLeft = document.getElementById('gamePopupLeft');
+const gameIframeLeft = document.getElementById('gameIframeLeft');
+const gamePopupTitleLeft = document.getElementById('gamePopupTitleLeft');
+const closeGamePopupLeft = document.getElementById('closeGamePopupLeft');
+const minimizeGame = document.getElementById('minimizeGame');
+const restoreGame = document.getElementById('restoreGame');
 
 playBtn.addEventListener('click', () => {
   if (audio.paused) {
@@ -246,20 +264,37 @@ document.querySelectorAll('.games-list a').forEach(el => {
     e.preventDefault();
     const name = el.dataset.name;
     const url = el.dataset.url;
-    // Скрываем список игр при выборе
     gamesList.style.display = 'none';
-    // Показываем окно игры справа
-    gamePopupTitleRight.textContent = name;
-    gameIframeRight.src = url;
-    gamePopupRight.style.display = 'flex';
+    gamePopupTitleLeft.textContent = name;
+    gameIframeLeft.src = url;
+    gamePopupLeft.style.display = 'flex';
+    restoreGame.style.display = 'none';
+    minimizeGame.style.display = 'inline-block';
+    gamePopupLeft.classList.remove('minimized');
+    gameIframeLeft.style.display = 'block';
   });
 });
 
-closeGamePopupRight.addEventListener('click', () => {
-  gamePopupRight.style.display = 'none';
-  gameIframeRight.src = '';
+minimizeGame.addEventListener('click', () => {
+  gameIframeLeft.style.display = 'none';
+  gamePopupLeft.style.height = '40px';
+  minimizeGame.style.display = 'none';
+  restoreGame.style.display = 'inline-block';
+  gamePopupLeft.classList.add('minimized');
+});
+
+restoreGame.addEventListener('click', () => {
+  gameIframeLeft.style.display = 'block';
+  gamePopupLeft.style.height = '400px';
+  restoreGame.style.display = 'none';
+  minimizeGame.style.display = 'inline-block';
+  gamePopupLeft.classList.remove('minimized');
+});
+
+closeGamePopupLeft.addEventListener('click', () => {
+  gamePopupLeft.style.display = 'none';
+  gameIframeLeft.src = '';
 });
 </script>
-
 </body>
 </html>
