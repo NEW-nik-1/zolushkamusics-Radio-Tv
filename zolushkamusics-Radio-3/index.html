@@ -157,10 +157,12 @@ function drawArtSpectrum() {
 
 playBtn.addEventListener('click', () => {
   initAudio();
+  // Закрываем ТВ и игры
   tvIframeContainer.style.display = 'none';
   tvIframe.src = 'about:blank';
   gameIframeContainer.style.display = 'none';
   gameIframe.src = 'about:blank';
+
   if (audio.paused) {
     audio.play();
     playBtn.textContent = '⏸ Пауза радио';
@@ -178,6 +180,7 @@ playTvBtn.addEventListener('click', () => {
   }
   gameIframeContainer.style.display = 'none';
   gameIframe.src = 'about:blank';
+
   if (tvIframeContainer.style.display === 'flex') {
     tvIframeContainer.style.display = 'none';
     tvIframe.src = 'about:blank';
