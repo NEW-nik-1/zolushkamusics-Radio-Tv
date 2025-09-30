@@ -181,23 +181,10 @@
     opacity: 0;
     pointer-events: none;
   }
-
-  /* основной canvas визуализации звука для большой области */
-
-  #spectrum {
-    width: 100%;
-    height: 50px;
-    display: block;
-    background: rgba(0,0,0,0.2);
-    border-radius: 8px;
-    margin-bottom: 24px;
-  }
 </style>
 </head>
 <body>
 <div class="container">
-
-  <canvas id="spectrum" data-tooltip="Звуковой спектр"></canvas>
 
   <div class="main">
     <div class="left-col">
@@ -294,44 +281,6 @@ function initAudio() {
   }
 }
 
-function drawSpectrum(){
-  requestAnimationFrame(drawSpectrum);
-  if (!analyser) return;
-  analyser.getByteFrequencyData(freqData);
-  const canvas = document.getElementById('spectrum');
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width = canvas.offsetWidth;
-  const h = canvas.height = canvas.offsetHeight;
-  ctx.clearRect(0, 0, w, h);
-
-  const sampleRate = audioCtx.sampleRate;
-  const binCount = analyser.frequencyBinCount;
-  const freqStep = (sampleRate / 2) / binCount;
-
-  const lowFreq = 20;
-  const highFreq = 5000;
-
-  const startBin = Math.floor(lowFreq / freqStep);
-  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount -1);
-
-  const count = endBin - startBin + 1;
-  const barWidth = w / count;
-
-  for(let i = 0; i < count; i++) {
-    const val = freqData[i + startBin];
-    const barHeight = val * (h / 256);
-    const x = i * barWidth;
-    const y = h - barHeight;
-
-    const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
-    gradient.addColorStop(0, '#f59e0b');
-    gradient.addColorStop(1, '#84cc16');
-    ctx.fillStyle = gradient;
-
-    ctx.fillRect(x, y, barWidth - 2, barHeight);
-  }
-}
-
 function drawArtSpectrum() {
   requestAnimationFrame(drawArtSpectrum);
   if (!artAnalyser) return;
@@ -348,12 +297,12 @@ function drawArtSpectrum() {
   const highFreq = 5000;
 
   const startBin = Math.floor(lowFreq / freqStep);
-  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount -1);
+  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount - 1);
 
   const count = endBin - startBin + 1;
   const barWidth = width / count;
 
-  for(let i = 0; i < count; i++) {
+  for (let i = 0; i < count; i++) {
     const val = artFreqData[i + startBin];
     const barHeight = val * (height / 256);
     const x = i * barWidth;
@@ -374,7 +323,6 @@ playBtn.addEventListener('click', () => {
   if (audio.paused) {
     audio.play();
     playBtn.textContent = '⏸ Pause';
-    drawSpectrum();
     drawArtSpectrum();
   } else {
     audio.pause();
@@ -387,7 +335,7 @@ gamesHeaderBtn.addEventListener('click', () => {
 });
 
 document.querySelectorAll('.games-list a').forEach(el => {
-  el.addEventListener('click', (e) => {
+  el.addEventListener('click', e => {
     e.preventDefault();
     const name = el.dataset.name;
     const url = el.dataset.url;
@@ -404,8 +352,8 @@ document.querySelectorAll('.games-list a').forEach(el => {
 
 minimizeGame.addEventListener('click', () => {
   gameIframeLeft.style.display = 'none';
-  gamePopupLeft.style.height = '40px'; // только заголовок видно
-  gamePopupLeft.style.top = '50px'; // поднять выше
+  gamePopupLeft.style.height = '40px';
+  gamePopupLeft.style.top = '50px';
   minimizeGame.style.display = 'none';
   restoreGame.style.display = 'inline-block';
   gamePopupLeft.classList.add('minimized');
@@ -413,8 +361,8 @@ minimizeGame.addEventListener('click', () => {
 
 restoreGame.addEventListener('click', () => {
   gameIframeLeft.style.display = 'block';
-  gamePopupLeft.style.height = '400px'; // исходная высота
-  gamePopupLeft.style.top = '70px'; // исходное положение
+  gamePopupLeft.style.height = '400px';
+  gamePopupLeft.style.top = '70px';
   restoreGame.style.display = 'none';
   minimizeGame.style.display = 'inline-block';
   gamePopupLeft.classList.remove('minimized');
