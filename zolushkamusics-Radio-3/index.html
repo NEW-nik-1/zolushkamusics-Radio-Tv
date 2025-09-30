@@ -3,53 +3,37 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DJ Room с играми и подсказками</title>
+<title>DJ Room с играми и чатом</title>
 <style>
   body {
     margin: 0;
     background: #1f1230;
     color: #eee;
     font-family: Inter, system-ui, -apple-system;
+    height: 100vh;
+    overflow: hidden;
   }
   .container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 22px auto;
-    padding: 0 0 22px 0;
-  }
-  .spectrum-outer {
-    background: rgba(255,255,255,0.03);
-    border-radius: 12px;
-    padding: 18px 22px 14px 22px;
-    box-sizing: border-box;
-    margin-bottom: 24px;
-    position: relative;
-  }
-  .spectrum-box {
-    height: 50px;
-  }
-  canvas {
-    width: 100%;
     height: 100%;
-    display: block;
-    background: rgba(0,0,0,0.2);
-    border-radius: 8px;
   }
   .main {
     display: flex;
-    gap: 28px;
+    gap: 20px;
     align-items: flex-start;
+    height: calc(100% - 22px);
   }
   .left-col {
-    flex: 0 0 340px;
+    flex: 0 0 200px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 12px;
   }
   .wrap {
     background: rgba(255,255,255,0.03);
     padding: 18px;
     border-radius: 12px;
-    position: relative;
   }
   .player-area {
     display: flex;
@@ -57,8 +41,8 @@
     align-items: center;
   }
   .art {
-    width: 120px;
-    height: 80px;
+    width: 80px;
+    height: 60px;
     background: #111;
     border-radius: 8px;
     display: flex;
@@ -69,7 +53,6 @@
   .info-box {
     flex: 1;
     min-width: 100px;
-    padding: 9px 0;
   }
   .title {
     font-weight: 700;
@@ -80,39 +63,34 @@
     color: #bdbdbd;
     margin-top: 4px;
   }
-  .controls {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: 10px;
-    font-size: 15px;
-    position: relative;
-  }
-  .games-header {
-    margin-left: 10px;
-    font-size: 15px;
+  .controls button {
     cursor: pointer;
+    font-size: 14px;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    background: #84cc16;
+    color: #111;
   }
-  .games-box {
-    background: #111;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 120px;
-  }
-  .games-box span {
-    font-size: 40px;
-    color: #ccc;
+  button.games-header {
+    margin-top: 10px;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: none;
+    background: #ddd;
+    color: #111;
+    font-weight: 600;
+    user-select: none;
   }
   .games-list {
-    display: none;
-    margin-top: 12px;
     background: #222;
     border-radius: 8px;
     padding: 10px;
-    max-height: 300px;
+    max-height: 280px;
     overflow-y: auto;
+    margin-top: 8px;
+    display: none;
   }
   .games-list div {
     font-weight: 600;
@@ -127,90 +105,80 @@
     color: #84cc16;
     text-decoration: none;
     cursor: pointer;
-    display: block;
     padding: 4px 0;
+    display: block;
   }
   .games-list ul li a:hover {
     text-decoration: underline;
   }
   .right-col {
     flex: 1;
-    min-width: 340px;
+    height: 100%;
     position: relative;
+    display: flex;
+    flex-direction: column;
   }
   #volnorez_chat {
-    width: 680px;
-    height: 500px;
-    min-height: 320px;
-    max-width: 100%;
-    box-sizing: border-box;
+    flex: 1;
     border-radius: 12px;
     overflow: hidden;
-    margin: 0 auto;
-    position: relative;
+    background: #111;
   }
-
-  /* Tooltip styles */
-  [data-tooltip] {
-    position: relative;
-    cursor: help;
-  }
-  [data-tooltip]:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #444;
+  #gamePopupLeft {
+    position: fixed;
+    top: 70px;
+    left: 210px;
+    width: 600px;
+    height: 400px;
+    background: #111;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #000;
     color: #eee;
-    padding: 6px 10px;
-    border-radius: 6px;
-    white-space: nowrap;
-    font-size: 13px;
-    opacity: 1;
-    pointer-events: none;
-    z-index: 10;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    overflow: hidden;
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
   }
-  [data-tooltip]:hover::before {
-    content: "";
-    position: absolute;
-    bottom: 115%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: #444;
-    z-index: 10;
-    opacity: 1;
-    pointer-events: none;
+  #gamePopupLeft > div.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #222;
+    padding: 10px;
+    font-weight: bold;
+  }
+  #gamePopupLeft button.close-btn {
+    background: none;
+    border: none;
+    color: #eee;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  #gamePopupLeft iframe {
+    border: none;
+    width: 100%;
+    height: calc(100% - 40px);
   }
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="spectrum-outer" data-tooltip="Визуализация частот аудио от 20 Гц до 5000 Гц">
-    <div class="spectrum-box">
-      <canvas id="spectrum" data-tooltip="Звуковой спектр"></canvas>
-    </div>
-  </div>
   <div class="main">
     <div class="left-col">
-      <div class="wrap" data-tooltip="Радио плеер: управление воспроизведением">
+      <div class="wrap" title="Радио плеер: управление воспроизведением">
         <div class="player-area">
-          <div class="art" id="art" data-tooltip="Обложка радиостанции">Radio</div>
+          <div class="art" title="Обложка радиостанции">Radio</div>
           <div class="info-box">
-            <div class="title" id="title" data-tooltip="Название станции">Volnorez Radio</div>
-            <div class="sub" id="artist" data-tooltip="Описание потока">Live stream</div>
+            <div class="title" title="Название станции">Volnorez Radio</div>
+            <div class="sub" title="Описание потока">Live stream</div>
             <div class="controls">
-              <button id="playBtn" data-tooltip="Воспроизвести/Пауза">▶ Play</button>
+              <button id="playBtn" title="Воспроизвести/Пауза">▶ Play</button>
             </div>
           </div>
         </div>
       </div>
-      <button class="games-header" data-tooltip="Список доступных игр">список игр</button>
-      <div class="games-box" data-tooltip="Игровой блок"><span>игры</span></div>
-
-      <div class="games-list">
+      <button class="games-header" title="Список доступных игр">СПИСОК ИГР</button>
+      <div class="games-list" title="Список игр">
         <div>Список игр</div>
         <ul>
           <li><a href="#" data-url="https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/" data-name="Gary's World">Gary's World</a></li>
@@ -227,16 +195,23 @@
         </ul>
       </div>
     </div>
-    <div class="right-col wrap" data-tooltip="Чат Volnorez">
+    <div class="right-col">
       <div id="volnorez_chat"
           data-code="001f69a7"
           data-skin-params="'panel_clr':'213,213,213','msgbg_clr':'243,243,243'"
           data-skin="skin_4"
-          style="height: 600px;" 
-          data-tooltip="Область чата — измените высоту в стилях">
+          style="height: 100%;"
+          title="Чат Volnorez">
         <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
       </div>
     </div>
+  </div>
+  <div id="gamePopupLeft">
+    <div class="header">
+      <span id="gamePopupTitle">Игра</span>
+      <button class="close-btn" id="closeGamePopup" title="Закрыть окно">×</button>
+    </div>
+    <iframe id="gameIframe" src=""></iframe>
   </div>
 </div>
 
@@ -245,21 +220,14 @@
 <script>
 const audio = document.getElementById('audio');
 const playBtn = document.getElementById('playBtn');
-const spectrumCanvas = document.getElementById('spectrum');
-const spectrumCtx = spectrumCanvas.getContext('2d');
-let audioCtx, analyser, source, freqData;
+const gamesHeaderBtn = document.querySelector('.games-header');
+const gamesList = document.querySelector('.games-list');
+const gamePopupLeft = document.getElementById('gamePopupLeft');
+const gameIframe = document.getElementById('gameIframe');
+const gamePopupTitle = document.getElementById('gamePopupTitle');
+const closeGamePopup = document.getElementById('closeGamePopup');
 
 playBtn.addEventListener('click', () => {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    source = audioCtx.createMediaElementSource(audio);
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    analyser.fftSize = 1024;
-    freqData = new Uint8Array(analyser.frequencyBinCount);
-    drawSpectrum();
-  }
   if (audio.paused) {
     audio.play();
     playBtn.textContent = '⏸ Pause';
@@ -269,71 +237,29 @@ playBtn.addEventListener('click', () => {
   }
 });
 
-function drawSpectrum(){
-  requestAnimationFrame(drawSpectrum);
-  if (!analyser) return;
-  analyser.getByteFrequencyData(freqData);
-  const w = spectrumCanvas.width = spectrumCanvas.offsetWidth;
-  const h = spectrumCanvas.height = spectrumCanvas.offsetHeight;
-  spectrumCtx.clearRect(0, 0, w, h);
-
-  const sampleRate = audioCtx.sampleRate;
-  const binCount = analyser.frequencyBinCount;
-  const freqStep = (sampleRate / 2) / binCount;
-
-  const lowFreq = 20;
-  const highFreq = 5000;
-
-  const startBin = Math.floor(lowFreq / freqStep);
-  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount -1);
-
-  const count = endBin - startBin + 1;
-  const barWidth = w / count;
-
-  for(let i = 0; i < count; i++) {
-    const val = freqData[i + startBin];
-    const barHeight = val * (h / 256);
-    const x = i * barWidth;
-    const y = h - barHeight;
-
-    const gradient = spectrumCtx.createLinearGradient(0, y, 0, y + barHeight);
-    gradient.addColorStop(0, '#f59e0b');
-    gradient.addColorStop(1, '#84cc16');
-    spectrumCtx.fillStyle = gradient;
-
-    spectrumCtx.fillRect(x, y, barWidth - 2, barHeight);
-  }
-}
-
-// Показ/скрытие списка игр по кнопке
-const gamesHeaderBtn = document.querySelector('.games-header');
-const gamesList = document.querySelector('.games-list');
 gamesHeaderBtn.addEventListener('click', () => {
   gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
 });
 
-// Открытие игры в новом окне
 document.querySelectorAll('.games-list a').forEach(el => {
   el.addEventListener('click', (e) => {
     e.preventDefault();
     const name = el.dataset.name;
     const url = el.dataset.url;
-    const width = 600;
-    const height = 400;
-    const left = (screen.width / 2) - (width / 2);
-    const top = (screen.height / 2) - (height / 2);
-
-    const gameWindow = window.open('', 'gamePopup', `width=${width},height=${height},top=${top},left=${left},resizable,scrollbars`);
-    gameWindow.document.title = name;
-    gameWindow.document.body.style.margin = '0';
-    gameWindow.document.body.style.overflow = 'hidden';
-    gameWindow.document.body.style.background = '#111';
-    gameWindow.document.body.innerHTML = `
-      <h2 style="color:#eee; text-align:center; margin:10px 0;">${name}</h2>
-      <iframe src="${url}" style="border:none; width:100%; height:${height - 50}px;"></iframe>
-    `;
+    // Скрываем список игр при выборе
+    gamesList.style.display = 'none';
+    // Показываем окно игры слева с правильными параметрами
+    gamePopupTitle.textContent = name;
+    gameIframe.src = url;
+    gamePopupLeft.style.display = 'flex';
   });
 });
+
+closeGamePopup.addEventListener('click', () => {
+  gamePopupLeft.style.display = 'none';
+  gameIframe.src = '';
+});
 </script>
+
 </body>
 </html>
