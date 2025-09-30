@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DJ Room с подсказками</title>
+<style>
+  body {
+    margin: 0;
+    background: #1f1230;
+    color: #eee;
+    font-family: Inter, system-ui, -apple-system;
+  }
+  .container {
+    max-width: 1400px;
+    margin: 22px auto;
+    padding: 0 0 22px 0;
+  }
+  .spectrum-outer {
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    padding: 18px 22px 14px 22px;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .spectrum-box {
+    height: 50px;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+  }
+  .main {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+  .left-col {
+    flex: 0 0 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .wrap {
+    background: rgba(255,255,255,0.03);
+    padding: 18px;
+    border-radius: 12px;
+    position: relative;
+  }
+  .player-area {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+  .art {
+    width: 120px;
+    height: 80px;
+    background: #111;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+  }
+  .info-box {
+    flex: 1;
+    min-width: 100px;
+    padding: 9px 0;
+  }
+  .title {
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .sub {
+    font-size: 13px;
+    color: #bdbdbd;
+    margin-top: 4px;
+  }
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 15px;
+    position: relative;
+  }
+  .games-header {
+    margin-bottom: 4px;
+    font-size: 15px;
+  }
+  .games-box {
+    background: #111;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+  }
+  .games-box span {
+    font-size: 40px;
+    color: #ccc;
+  }
+  .right-col {
+    flex: 1;
+    min-width: 340px;
+    position: relative;
+  }
+  #volnorez_chat {
+    width: 480px;
+    height: 500px;
+    min-height: 320px;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* Tooltip styles */
+  [data-tooltip] {
+    position: relative;
+    cursor: help;
+  }
+  [data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #444;
+    color: #eee;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 13px;
+    opacity: 1;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  [data-tooltip]:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #444;
+    z-index: 10;
+    opacity: 1;
+    pointer-events: none;
+  }
+
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="spectrum-outer" data-tooltip="Визуализация частот аудио от 20 Гц до 5000 Гц">
+    <div class="spectrum-box">
+      <canvas id="spectrum" data-tooltip="Звуковой спектр"></canvas>
+    </div>
+  </div>
+  <div class="main">
+    <div class="left-col">
+      <div class="wrap" data-tooltip="Радио плеер: управление воспроизведением">
+        <div class="player-area">
+          <div class="art" id="art" data-tooltip="Обложка радиостанции">Radio</div>
+          <div class="info-box">
+            <div class="title" id="title" data-tooltip="Название станции">Volnorez Radio</div>
+            <div class="sub" id="artist" data-tooltip="Описание потока">Live stream</div>
+            <div class="controls">
+              <button id="playBtn" data-tooltip="Воспроизвести/Пауза">▶ Play</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="games-header" style="margin-left:10px;" data-tooltip="Список доступных игр">список игр</button>
+      <div class="games-box" data-tooltip="Игровой блок"><span>игры</span></div>
+    </div>
+    <div class="right-col wrap" data-tooltip="Чат Volnorez">
+      <div id="volnorez_chat"
+          data-code="001f69a7"
+          data-skin-params="'panel_clr':'213,213,213','msgbg_clr':'243,243,243'"
+          data-skin="skin_4"
+          style="height: 600px;" 
+          data-tooltip="Область чата — измените высоту в стилях">
+        <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+<audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
+<script>
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+const spectrumCanvas = document.getElementById('spectrum');
+const spectrumCtx = spectrumCanvas.getContext('2d');
+let audioCtx, analyser, source, freqData;
+
+playBtn.addEventListener('click', () => {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    source = audioCtx.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 1024;
+    freqData = new Uint8Array(analyser.frequencyBinCount);
+    drawSpectrum();
+  }
+  if (audio.paused) {audio.play(); playBtn.textContent = '⏸ Pause';}
+  else {audio.pause(); playBtn.textContent = '▶ Play';}
+});
+
+function drawSpectrum(){
+  requestAnimationFrame(drawSpectrum);
+  if (!analyser) return;
+  analyser.getByteFrequencyData(freqData);
+  const w = spectrumCanvas.width = spectrumCanvas.offsetWidth;
+  const h = spectrumCanvas.height = spectrumCanvas.offsetHeight;
+  spectrumCtx.clearRect(0, 0, w, h);
+
+  const sampleRate = audioCtx.sampleRate;
+  const binCount = analyser.frequencyBinCount;
+  const freqStep = (sampleRate / 2) / binCount;
+
+  const lowFreq = 20;
+  const highFreq = 5000;
+
+  const startBin = Math.floor(lowFreq / freqStep);
+  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount -1);
+
+  const count = endBin - startBin + 1;
+  const barWidth = w / count;
+
+  for(let i = 0; i < count; i++) {
+    const val = freqData[i + startBin];
+    const barHeight = val * (h / 256);
+    const x = i * barWidth;
+    const y = h - barHeight;
+
+    const gradient = spectrumCtx.createLinearGradient(0, y, 0, y + barHeight);
+    gradient.addColorStop(0, '#f59e0b');
+    gradient.addColorStop(1, '#84cc16');
+    spectrumCtx.fillStyle = gradient;
+
+    spectrumCtx.fillRect(x, y, barWidth - 2, barHeight);
+  }
+}
+</script>
+</body>
+</html>
