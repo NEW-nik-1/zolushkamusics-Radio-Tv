@@ -42,14 +42,14 @@
     align-items: center;
   }
   .art {
-    width: 80px;
-    height: 60px;
+    width: 120px;
+    height: 80px;
     background: #111;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #aaa;
+    overflow: hidden;
   }
   .info-box {
     flex: 1;
@@ -176,6 +176,12 @@
     opacity: 0;
     pointer-events: none;
   }
+  /* Канвас для визуализации в art */
+  #artSpectrum {
+    width: 120px;
+    height: 80px;
+    display: block;
+  }
 </style>
 </head>
 <body>
@@ -184,7 +190,9 @@
     <div class="left-col">
       <div class="wrap" title="Радио плеер: управление воспроизведением">
         <div class="player-area">
-          <div class="art" title="Обложка радиостанции">Radio</div>
+          <div class="art" id="art" data-tooltip="Визуализация аудио">
+            <canvas id="artSpectrum" width="120" height="80"></canvas>
+          </div>
           <div class="info-box">
             <div class="title" title="Название станции">Volnorez Radio</div>
             <div class="sub" title="Описание потока">Live stream</div>
@@ -250,7 +258,30 @@ const closeGamePopupLeft = document.getElementById('closeGamePopupLeft');
 const minimizeGame = document.getElementById('minimizeGame');
 const restoreGame = document.getElementById('restoreGame');
 
+let audioCtx, analyser, source, freqData;
+let artAudioCtx, artAnalyser, artSource, artFreqData;
+
 playBtn.addEventListener('click', () => {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    source = audioCtx.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 1024;
+    freqData = new Uint8Array(analyser.frequencyBinCount);
+    drawSpectrum();
+  }
+  if (!artAudioCtx) {
+    artAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    artAnalyser = artAudioCtx.createAnalyser();
+    artSource = artAudioCtx.createMediaElementSource(audio);
+    artSource.connect(artAnalyser);
+    artAnalyser.connect(artAudioCtx.destination);
+    artAnalyser.fftSize = 256;
+    artFreqData = new Uint8Array(artAnalyser.frequencyBinCount);
+    drawArtSpectrum();
+  }
   if (audio.paused) {
     audio.play();
     playBtn.textContent = '⏸ Pause';
@@ -259,6 +290,93 @@ playBtn.addEventListener('click', () => {
     playBtn.textContent = '▶ Play';
   }
 });
+
+const spectrumCanvas = document.getElementById('spectrum');
+const spectrumCtx = spectrumCanvas.getContext('2d');
+
+function drawSpectrum(){
+  requestAnimationFrame(drawSpectrum);
+  if (!analyser) return;
+  analyser.getByteFrequencyData(freqData);
+  const w = spectrumCanvas.width = spectrumCanvas.offsetWidth;
+  const h = spectrumCanvas.height = spectrumCanvas.offsetHeight;
+  spectrumCtx.clearRect(0, 0, w, h);
+
+  const sampleRate = audioCtx.sampleRate;
+  const binCount = analyser.frequencyBinCount;
+  const freqStep = (sampleRate / 2) / binCount;
+
+  const lowFreq = 20;
+  const highFreq = 5000;
+
+  const startBin = Math.floor(lowFreq / freqStep);
+  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount -1);
+
+  const count = endBin - startBin + 1;
+  const barWidth = w / count;
+
+  for(let i = 0; i < count; i++) {
+    const val = freqData[i + startBin];
+    const barHeight = val * (h / 256);
+    const x = i * barWidth;
+    const y = h - barHeight;
+
+    const gradient = spectrumCtx.createLinearGradient(0, y, 0, y + barHeight);
+    gradient.addColorStop(0, '#f59e0b');
+    gradient.addColorStop(1, '#84cc16');
+    spectrumCtx.fillStyle = gradient;
+
+    spectrumCtx.fillRect(x, y, barWidth - 2, barHeight);
+  }
+}
+
+const artCanvas = document.getElementById('artSpectrum');
+const artCtx = artCanvas.getContext('2d');
+
+function drawArtSpectrum(){
+  requestAnimationFrame(drawArtSpectrum);
+  if (!artAnalyser) return;
+  artAnalyser.getByteFrequencyData(artFreqData);
+  const width = artCanvas.width;
+  const height = artCanvas.height;
+  artCtx.clearRect(0, 0, width, height);
+
+  const sampleRate = artAudioCtx.sampleRate;
+  const binCount = artAnalyser.frequencyBinCount;
+  const freqStep = (sampleRate / 2) / binCount;
+
+  const lowFreq = 20;
+  const highFreq = 5000;
+
+  const startBin = Math.floor(lowFreq / freqStep);
+  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount -1);
+
+  const count = endBin - startBin + 1;
+  const barWidth = width / count;
+
+  for(let i = 0; i < count; i++) {
+    const val = artFreqData[i + startBin];
+    const barHeight = val * (height / 256);
+    const x = i * barWidth;
+    const y = height - barHeight;
+
+    const gradient = artCtx.createLinearGradient(0, y, 0, y + barHeight);
+    gradient.addColorStop(0, '#f59e0b');
+    gradient.addColorStop(1, '#84cc16');
+    artCtx.fillStyle = gradient;
+
+    artCtx.fillRect(x, y, barWidth - 1, barHeight);
+  }
+}
+
+const closeGamePopupLeft = document.getElementById('closeGamePopupLeft');
+const minimizeGame = document.getElementById('minimizeGame');
+const restoreGame = document.getElementById('restoreGame');
+const gamePopupLeft = document.getElementById('gamePopupLeft');
+const gameIframeLeft = document.getElementById('gameIframeLeft');
+const gamePopupTitleLeft = document.getElementById('gamePopupTitleLeft');
+const gamesHeaderBtn = document.querySelector('.games-header');
+const gamesList = document.querySelector('.games-list');
 
 gamesHeaderBtn.addEventListener('click', () => {
   gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
@@ -275,7 +393,6 @@ document.querySelectorAll('.games-list a').forEach(el => {
     gamePopupTitleLeft.textContent = name;
     gameIframeLeft.src = url;
     gamePopupLeft.style.display = 'flex';
-    // Восстанавливаем окно, если было свернуто
     restoreGame.style.display = 'none';
     minimizeGame.style.display = 'inline-block';
     gamePopupLeft.classList.remove('minimized');
@@ -286,7 +403,7 @@ document.querySelectorAll('.games-list a').forEach(el => {
 minimizeGame.addEventListener('click', () => {
   gameIframeLeft.style.display = 'none';
   gamePopupLeft.style.height = '40px'; // только заголовок видно
-  gamePopupLeft.style.top = '50px'; // поднимаем полоску выше
+  gamePopupLeft.style.top = '50px'; // поднять выше
   minimizeGame.style.display = 'none';
   restoreGame.style.display = 'inline-block';
   gamePopupLeft.classList.add('minimized');
@@ -295,7 +412,7 @@ minimizeGame.addEventListener('click', () => {
 restoreGame.addEventListener('click', () => {
   gameIframeLeft.style.display = 'block';
   gamePopupLeft.style.height = '400px'; // исходная высота
-  gamePopupLeft.style.top = '70px'; // исходное положение сверху
+  gamePopupLeft.style.top = '70px'; // исходное положение
   restoreGame.style.display = 'none';
   minimizeGame.style.display = 'inline-block';
   gamePopupLeft.classList.remove('minimized');
