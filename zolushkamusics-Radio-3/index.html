@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DJ Room с подсказками</title>
+<title>DJ Room с играми и подсказками</title>
 <style>
   body {
     margin: 0;
@@ -89,8 +89,9 @@
     position: relative;
   }
   .games-header {
-    margin-bottom: 4px;
+    margin-left: 10px;
     font-size: 15px;
+    cursor: pointer;
   }
   .games-box {
     background: #111;
@@ -103,6 +104,34 @@
   .games-box span {
     font-size: 40px;
     color: #ccc;
+  }
+  .games-list {
+    display: none;
+    margin-top: 12px;
+    background: #222;
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .games-list div {
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .games-list ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  .games-list ul li a {
+    color: #84cc16;
+    text-decoration: none;
+    cursor: pointer;
+    display: block;
+    padding: 4px 0;
+  }
+  .games-list ul li a:hover {
+    text-decoration: underline;
   }
   .right-col {
     flex: 1;
@@ -155,7 +184,6 @@
     opacity: 1;
     pointer-events: none;
   }
-
 </style>
 </head>
 <body>
@@ -179,8 +207,25 @@
           </div>
         </div>
       </div>
-      <button class="games-header" style="margin-left:10px;" data-tooltip="Список доступных игр">список игр</button>
+      <button class="games-header" data-tooltip="Список доступных игр">список игр</button>
       <div class="games-box" data-tooltip="Игровой блок"><span>игры</span></div>
+
+      <div class="games-list">
+        <div>Список игр</div>
+        <ul>
+          <li><a href="#" data-url="https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/" data-name="Gary's World">Gary's World</a></li>
+          <li><a href="#" data-url="https://www.onlinegames.io/games/2021/unity2/crazy-ball-adventures/index.html" data-name="Crazy Ball Adventures">Crazy Ball Adventures</a></li>
+          <li><a href="#" data-url="https://www.gamenora.com/embed/subway-horror-chapter-1" data-name="Subway Horror Chapter 1">Subway Horror Chapter 1</a></li>
+          <li><a href="#" data-url="https://www.gamenora.com/embed/a-difficult-game-about-climbing" data-name="A Difficult Game About Climbing">A Difficult Game About Climbing</a></li>
+          <li><a href="#" data-url="https://www.onlinegames.io/games/2023/unity/cross-the-road/index.html" data-name="Cross The Road">Cross The Road</a></li>
+          <li><a href="#" data-url="https://s3.eponesh.com/games/8866/" data-name="Motorcycle Racer">Motorcycle Racer</a></li>
+          <li><a href="#" data-url="https://app-165758.games.s3.yandex.net/165758/ghtg4xyuxt09og6gtji0jcl6aw8el4w4/index.html" data-name="Moto Rider GO">Moto Rider GO</a></li>
+          <li><a href="#" data-url="https://www.onlinegames.io/games/2021/unity/motorbike-traffic/index.html" data-name="Motorbike Traffic">Motorbike Traffic</a></li>
+          <li><a href="#" data-url="https://www.gamenora.com/splash/turbo-moto-racer-3d/" data-name="Turbo Moto Racer 3D">Turbo Moto Racer 3D</a></li>
+          <li><a href="#" data-url="https://www.onlinegames.io/games/2021/unity/atv-highway-traffic/index.html" data-name="ATV Highway Traffic">ATV Highway Traffic</a></li>
+          <li><a href="#" data-url="https://traffictour.github.io/traffic-tour/" data-name="Traffic Tour">Traffic Tour</a></li>
+        </ul>
+      </div>
     </div>
     <div class="right-col wrap" data-tooltip="Чат Volnorez">
       <div id="volnorez_chat"
@@ -194,7 +239,9 @@
     </div>
   </div>
 </div>
+
 <audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
+
 <script>
 const audio = document.getElementById('audio');
 const playBtn = document.getElementById('playBtn');
@@ -213,8 +260,13 @@ playBtn.addEventListener('click', () => {
     freqData = new Uint8Array(analyser.frequencyBinCount);
     drawSpectrum();
   }
-  if (audio.paused) {audio.play(); playBtn.textContent = '⏸ Pause';}
-  else {audio.pause(); playBtn.textContent = '▶ Play';}
+  if (audio.paused) {
+    audio.play();
+    playBtn.textContent = '⏸ Pause';
+  } else {
+    audio.pause();
+    playBtn.textContent = '▶ Play';
+  }
 });
 
 function drawSpectrum(){
@@ -252,6 +304,36 @@ function drawSpectrum(){
     spectrumCtx.fillRect(x, y, barWidth - 2, barHeight);
   }
 }
+
+// Показ/скрытие списка игр по кнопке
+const gamesHeaderBtn = document.querySelector('.games-header');
+const gamesList = document.querySelector('.games-list');
+gamesHeaderBtn.addEventListener('click', () => {
+  gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
+});
+
+// Открытие игры в новом окне
+document.querySelectorAll('.games-list a').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    const name = el.dataset.name;
+    const url = el.dataset.url;
+    const width = 600;
+    const height = 400;
+    const left = (screen.width / 2) - (width / 2);
+    const top = (screen.height / 2) - (height / 2);
+
+    const gameWindow = window.open('', 'gamePopup', `width=${width},height=${height},top=${top},left=${left},resizable,scrollbars`);
+    gameWindow.document.title = name;
+    gameWindow.document.body.style.margin = '0';
+    gameWindow.document.body.style.overflow = 'hidden';
+    gameWindow.document.body.style.background = '#111';
+    gameWindow.document.body.innerHTML = `
+      <h2 style="color:#eee; text-align:center; margin:10px 0;">${name}</h2>
+      <iframe src="${url}" style="border:none; width:100%; height:${height - 50}px;"></iframe>
+    `;
+  });
+});
 </script>
 </body>
 </html>
