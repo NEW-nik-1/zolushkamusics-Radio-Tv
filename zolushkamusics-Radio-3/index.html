@@ -53,8 +53,8 @@
     overflow: hidden;
     display: none;
     z-index: 10000;
-    display: flex;
     flex-direction: column;
+    display: flex;
   }
   #tv-iframe-header {
     background: #222;
@@ -240,142 +240,143 @@
 <audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
 
 <script>
-  const tvIframeContainer = document.getElementById('tv-iframe-container');
-  const tvIframe = document.getElementById('tv-iframe');
-  const tvCloseBtn = document.getElementById('tvCloseBtn');
-  const tvMinimizeBtn = document.getElementById('tvMinimizeBtn');
-  const tvRestoreBtn = document.getElementById('tvRestoreBtn');
-  const playRadioControlBtn = document.getElementById('playRadioControlBtn');
-  const playBtn = document.getElementById('playBtn');
-  const audio = document.getElementById('audio');
-  const gamesHeaderBtn = document.querySelector('.games-header');
-  const gamesList = document.querySelector('.games-list');
+const tvIframeContainer = document.getElementById('tv-iframe-container');
+const tvIframe = document.getElementById('tv-iframe');
+const tvCloseBtn = document.getElementById('tvCloseBtn');
+const tvMinimizeBtn = document.getElementById('tvMinimizeBtn');
+const tvRestoreBtn = document.getElementById('tvRestoreBtn');
+const playRadioControlBtn = document.getElementById('playRadioControlBtn');
+const playBtn = document.getElementById('playBtn');
+const audio = document.getElementById('audio');
+const gamesHeaderBtn = document.querySelector('.games-header');
+const gamesList = document.querySelector('.games-list');
 
-  let audioCtx, analyser, source, freqData;
-  let artCtx, artCanvas, artAnalyser, artFreqData;
+let audioCtx, analyser, source, freqData;
+let artCtx, artCanvas, artAnalyser, artFreqData;
 
-  function initAudio() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
-      source = audioCtx.createMediaElementSource(audio);
-      source.connect(analyser);
-      analyser.connect(audioCtx.destination);
-      analyser.fftSize = 1024;
-      freqData = new Uint8Array(analyser.frequencyBinCount);
-    }
-    if (!artCtx) {
-      artCanvas = document.getElementById('artSpectrum');
-      artCtx = artCanvas.getContext('2d');
-      artAnalyser = analyser;
-      artFreqData = freqData;
-    }
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    source = audioCtx.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 1024;
+    freqData = new Uint8Array(analyser.frequencyBinCount);
   }
-
-  function drawArtSpectrum() {
-    requestAnimationFrame(drawArtSpectrum);
-    if (!artAnalyser) return;
-    artAnalyser.getByteFrequencyData(artFreqData);
-    const width = artCanvas.width;
-    const height = artCanvas.height;
-    artCtx.clearRect(0, 0, width, height);
-
-    const sampleRate = audioCtx.sampleRate;
-    const binCount = artAnalyser.frequencyBinCount;
-    const freqStep = (sampleRate / 2) / binCount;
-
-    const lowFreq = 20;
-    const highFreq = 5000;
-
-    const startBin = Math.floor(lowFreq / freqStep);
-    const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount - 1);
-
-    const count = endBin - startBin + 1;
-    const barWidth = width / count;
-
-    for (let i = 0; i < count; i++) {
-      const val = artFreqData[i + startBin];
-      const barHeight = val * (height / 256);
-      const x = i * barWidth;
-      const y = height - barHeight;
-
-      const gradient = artCtx.createLinearGradient(0, y, 0, y + barHeight);
-      gradient.addColorStop(0, '#f59e0b');
-      gradient.addColorStop(1, '#84cc16');
-      artCtx.fillStyle = gradient;
-
-      artCtx.fillRect(x, y, barWidth - 1, barHeight);
-    }
+  if (!artCtx) {
+    artCanvas = document.getElementById('artSpectrum');
+    artCtx = artCanvas.getContext('2d');
+    artAnalyser = analyser;
+    artFreqData = freqData;
   }
+}
 
-  playRadioControlBtn.addEventListener('click', () => {
-    initAudio();
+function drawArtSpectrum() {
+  requestAnimationFrame(drawArtSpectrum);
+  if (!artAnalyser) return;
+  artAnalyser.getByteFrequencyData(artFreqData);
+  const width = artCanvas.width;
+  const height = artCanvas.height;
+  artCtx.clearRect(0, 0, width, height);
 
-    if (audio.paused) {
-      audio.play();
-      playRadioControlBtn.textContent = '⏸ Пауза';
-      drawArtSpectrum();
-      tvIframeContainer.style.display = 'none';
-    } else {
-      audio.pause();
-      playRadioControlBtn.textContent = '▶ Включить радио';
-    }
-  });
+  const sampleRate = audioCtx.sampleRate;
+  const binCount = artAnalyser.frequencyBinCount;
+  const freqStep = (sampleRate / 2) / binCount;
 
-  playTvBtn.addEventListener('click', () => {
+  const lowFreq = 20;
+  const highFreq = 5000;
+
+  const startBin = Math.floor(lowFreq / freqStep);
+  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount - 1);
+
+  const count = endBin - startBin + 1;
+  const barWidth = width / count;
+
+  for (let i = 0; i < count; i++) {
+    const val = artFreqData[i + startBin];
+    const barHeight = val * (height / 256);
+    const x = i * barWidth;
+    const y = height - barHeight;
+
+    const gradient = artCtx.createLinearGradient(0, y, 0, y + barHeight);
+    gradient.addColorStop(0, '#f59e0b');
+    gradient.addColorStop(1, '#84cc16');
+    artCtx.fillStyle = gradient;
+
+    artCtx.fillRect(x, y, barWidth - 1, barHeight);
+  }
+}
+
+playRadioControlBtn.addEventListener('click', () => {
+  initAudio();
+
+  if (audio.paused) {
+    audio.play();
+    playRadioControlBtn.textContent = '⏸ Пауза';
+    drawArtSpectrum();
+    tvIframeContainer.style.display = 'none';
+  } else {
+    audio.pause();
+    playRadioControlBtn.textContent = '▶ Включить радио';
+  }
+});
+
+playTvBtn.addEventListener('click', () => {
+  if (!audio.paused) {
+    audio.pause();
+    playRadioControlBtn.textContent = '▶ Включить радио';
+  }
+  tvIframeContainer.style.display = 'flex';
+  tvIframe.style.display = 'block';
+  tvRestoreBtn.style.display = 'none';
+  tvMinimizeBtn.style.display = 'inline-block';
+});
+
+tvCloseBtn.addEventListener('click', () => {
+  // Полное отключение ТВ и скрытие окна при клике на крестик
+  tvIframeContainer.style.display = 'none';
+  tvIframe.src = 'about:blank'; // Отключаем ТВ поток
+});
+
+tvMinimizeBtn.addEventListener('click', () => {
+  tvIframeContainer.style.height = '40px';
+  tvMinimizeBtn.style.display = 'none';
+  tvRestoreBtn.style.display = 'inline-block';
+  tvIframe.style.display = 'none';
+});
+
+tvRestoreBtn.addEventListener('click', () => {
+  tvIframeContainer.style.height = '270px';
+  tvRestoreBtn.style.display = 'none';
+  tvMinimizeBtn.style.display = 'inline-block';
+  tvIframe.style.display = 'block';
+});
+
+gamesHeaderBtn.addEventListener('click', () => {
+  gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
+});
+
+document.querySelectorAll('.games-list a').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    const name = el.dataset.name;
+    const url = el.dataset.url;
+    gamesList.style.display = 'none';
+    gamePopupTitleLeft.textContent = name;
+    gameIframeLeft.src = url;
+    gamePopupLeft.style.display = 'flex';
+    restoreGame.style.display = 'none';
+    minimizeGame.style.display = 'inline-block';
+    gamePopupLeft.classList.remove('minimized');
+    gameIframeLeft.style.display = 'block';
+    tvIframeContainer.style.display = 'none';
     if (!audio.paused) {
       audio.pause();
       playRadioControlBtn.textContent = '▶ Включить радио';
     }
-    tvIframeContainer.style.display = 'flex';
-    tvIframe.style.display = 'block';
-    tvRestoreBtn.style.display = 'none';
-    tvMinimizeBtn.style.display = 'inline-block';
   });
-
-  tvCloseBtn.addEventListener('click', () => {
-    // Закрываем окно ТВ и отключаем ТВ
-    tvIframeContainer.style.display = 'none';
-  });
-
-  tvMinimizeBtn.addEventListener('click', () => {
-    tvIframeContainer.style.height = '40px';
-    tvMinimizeBtn.style.display = 'none';
-    tvRestoreBtn.style.display = 'inline-block';
-    tvIframe.style.display = 'none';
-  });
-
-  tvRestoreBtn.addEventListener('click', () => {
-    tvIframeContainer.style.height = '270px';
-    tvRestoreBtn.style.display = 'none';
-    tvMinimizeBtn.style.display = 'inline-block';
-    tvIframe.style.display = 'block';
-  });
-
-  gamesHeaderBtn.addEventListener('click', () => {
-    gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
-  });
-
-  document.querySelectorAll('.games-list a').forEach(el => {
-    el.addEventListener('click', e => {
-      e.preventDefault();
-      const name = el.dataset.name;
-      const url = el.dataset.url;
-      gamesList.style.display = 'none';
-      gamePopupTitleLeft.textContent = name;
-      gameIframeLeft.src = url;
-      gamePopupLeft.style.display = 'flex';
-      restoreGame.style.display = 'none';
-      minimizeGame.style.display = 'inline-block';
-      gamePopupLeft.classList.remove('minimized');
-      gameIframeLeft.style.display = 'block';
-      tvIframeContainer.style.display = 'none';
-      if (!audio.paused) {
-        audio.pause();
-        playRadioControlBtn.textContent = '▶ Включить радио';
-      }
-    });
-  });
+});
 </script>
 </body>
 </html>
