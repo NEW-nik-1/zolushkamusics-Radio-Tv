@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DJ Room с радио, ТВ, чат, игры и визуализация</title>
+<title>DJ Room с радио, ТВ, чатом, играми и визуализацией</title>
 <style>
   body {
     margin: 0;
@@ -173,7 +173,7 @@
 <div class="container">
 
   <div class="player-area">
-    <button id="playRadioBtn" title="Включить радио">
+    <button id="playBtn" title="Включить радио">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M4 8v10h16V8H4zm14 8H6v-6h12v6zm-6-7a2 2 0 110 4 2 2 0 010-4zm0 3a1 1 0 100-2 1 1 0 000 2z"/>
       </svg>
@@ -204,7 +204,7 @@
       <div class="title">Volnorez Radio</div>
       <div class="sub">Live stream</div>
       <div>
-        <button id="playBtn">Включить радио</button>
+        <button id="playRadioControlBtn">Включить радио</button>
       </div>
       <button class="games-header" title="Список доступных игр">СПИСОК ИГР</button>
       <div class="games-list" title="Список игр">
@@ -240,120 +240,141 @@
 <audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
 
 <script>
-const tvIframeContainer = document.getElementById('tv-iframe-container');
-const tvIframe = document.getElementById('tv-iframe');
-const tvCloseBtn = document.getElementById('tvCloseBtn');
-const tvMinimizeBtn = document.getElementById('tvMinimizeBtn');
-const tvRestoreBtn = document.getElementById('tvRestoreBtn');
+  const tvIframeContainer = document.getElementById('tv-iframe-container');
+  const tvIframe = document.getElementById('tv-iframe');
+  const tvCloseBtn = document.getElementById('tvCloseBtn');
+  const tvMinimizeBtn = document.getElementById('tvMinimizeBtn');
+  const tvRestoreBtn = document.getElementById('tvRestoreBtn');
+  const playRadioControlBtn = document.getElementById('playRadioControlBtn');
+  const playBtn = document.getElementById('playBtn');
+  const audio = document.getElementById('audio');
+  const gamesHeaderBtn = document.querySelector('.games-header');
+  const gamesList = document.querySelector('.games-list');
 
-const playRadioBtn = document.getElementById('playRadioBtn');
-const playTvBtn = document.getElementById('playTvBtn');
-const playBtn = document.getElementById('playBtn');
-const audio = document.getElementById('audio');
+  let audioCtx, analyser, source, freqData;
+  let artCtx, artCanvas, artAnalyser, artFreqData;
 
-let audioCtx, analyser, source, freqData;
-let artCtx, artCanvas, artAnalyser, artFreqData;
-
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    source = audioCtx.createMediaElementSource(audio);
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    analyser.fftSize = 1024;
-    freqData = new Uint8Array(analyser.frequencyBinCount);
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      source = audioCtx.createMediaElementSource(audio);
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      analyser.fftSize = 1024;
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+    }
+    if (!artCtx) {
+      artCanvas = document.getElementById('artSpectrum');
+      artCtx = artCanvas.getContext('2d');
+      artAnalyser = analyser;
+      artFreqData = freqData;
+    }
   }
-  if (!artCtx) {
-    artCanvas = document.getElementById('artSpectrum');
-    artCtx = artCanvas.getContext('2d');
 
-    artAnalyser = analyser;
-    artFreqData = freqData;
+  function drawArtSpectrum() {
+    requestAnimationFrame(drawArtSpectrum);
+    if (!artAnalyser) return;
+    artAnalyser.getByteFrequencyData(artFreqData);
+    const width = artCanvas.width;
+    const height = artCanvas.height;
+    artCtx.clearRect(0, 0, width, height);
+
+    const sampleRate = audioCtx.sampleRate;
+    const binCount = artAnalyser.frequencyBinCount;
+    const freqStep = (sampleRate / 2) / binCount;
+
+    const lowFreq = 20;
+    const highFreq = 5000;
+
+    const startBin = Math.floor(lowFreq / freqStep);
+    const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount - 1);
+
+    const count = endBin - startBin + 1;
+    const barWidth = width / count;
+
+    for (let i = 0; i < count; i++) {
+      const val = artFreqData[i + startBin];
+      const barHeight = val * (height / 256);
+      const x = i * barWidth;
+      const y = height - barHeight;
+
+      const gradient = artCtx.createLinearGradient(0, y, 0, y + barHeight);
+      gradient.addColorStop(0, '#f59e0b');
+      gradient.addColorStop(1, '#84cc16');
+      artCtx.fillStyle = gradient;
+
+      artCtx.fillRect(x, y, barWidth - 1, barHeight);
+    }
   }
-}
 
-function drawArtSpectrum() {
-  requestAnimationFrame(drawArtSpectrum);
-  if (!artAnalyser) return;
-  artAnalyser.getByteFrequencyData(artFreqData);
-  const width = artCanvas.width;
-  const height = artCanvas.height;
-  artCtx.clearRect(0, 0, width, height);
+  playRadioControlBtn.addEventListener('click', () => {
+    initAudio();
 
-  const sampleRate = audioCtx.sampleRate;
-  const binCount = artAnalyser.frequencyBinCount;
-  const freqStep = (sampleRate / 2) / binCount;
+    if (audio.paused) {
+      audio.play();
+      playRadioControlBtn.textContent = '⏸ Пауза';
+      drawArtSpectrum();
+      tvIframeContainer.style.display = 'none';
+    } else {
+      audio.pause();
+      playRadioControlBtn.textContent = '▶ Включить радио';
+    }
+  });
 
-  const lowFreq = 20;
-  const highFreq = 5000;
+  playTvBtn.addEventListener('click', () => {
+    if (!audio.paused) {
+      audio.pause();
+      playRadioControlBtn.textContent = '▶ Включить радио';
+    }
+    tvIframeContainer.style.display = 'flex';
+    tvIframe.style.display = 'block';
+    tvRestoreBtn.style.display = 'none';
+    tvMinimizeBtn.style.display = 'inline-block';
+  });
 
-  const startBin = Math.floor(lowFreq / freqStep);
-  const endBin = Math.min(Math.ceil(highFreq / freqStep), binCount - 1);
-
-  const count = endBin - startBin + 1;
-  const barWidth = width / count;
-
-  for (let i = 0; i < count; i++) {
-    const val = artFreqData[i + startBin];
-    const barHeight = val * (height / 256);
-    const x = i * barWidth;
-    const y = height - barHeight;
-
-    const gradient = artCtx.createLinearGradient(0, y, 0, y + barHeight);
-    gradient.addColorStop(0, '#f59e0b');
-    gradient.addColorStop(1, '#84cc16');
-    artCtx.fillStyle = gradient;
-
-    artCtx.fillRect(x, y, barWidth - 1, barHeight);
-  }
-}
-
-// Кнопки радио и тв
-playBtn.addEventListener('click', () => {
-  initAudio();
-
-  if (audio.paused) {
-    audio.play();
-    playBtn.textContent = '⏸ Пауза';
-    drawArtSpectrum();
+  tvCloseBtn.addEventListener('click', () => {
     tvIframeContainer.style.display = 'none';
-  } else {
-    audio.pause();
-    playBtn.textContent = '▶ Включить радио';
-  }
-});
+  });
 
-playTvBtn.addEventListener('click', () => {
-  if (!audio.paused) {
-    audio.pause();
-    playBtn.textContent = '▶ Включить радио';
-  }
-  tvIframeContainer.style.display = 'flex';
-  // Если было свернуто, восстанавливаем окно ТВ
-  tvRestoreBtn.style.display = 'none';
-  tvMinimizeBtn.style.display = 'inline-block';
-});
+  tvMinimizeBtn.addEventListener('click', () => {
+    tvIframeContainer.style.height = '40px';
+    tvMinimizeBtn.style.display = 'none';
+    tvRestoreBtn.style.display = 'inline-block';
+    tvIframe.style.display = 'none';
+  });
 
-// Кнопки управления ТВ окном
-tvCloseBtn.addEventListener('click', () => {
-  tvIframeContainer.style.display = 'none';
-});
+  tvRestoreBtn.addEventListener('click', () => {
+    tvIframeContainer.style.height = '270px';
+    tvRestoreBtn.style.display = 'none';
+    tvMinimizeBtn.style.display = 'inline-block';
+    tvIframe.style.display = 'block';
+  });
 
-tvMinimizeBtn.addEventListener('click', () => {
-  tvIframeContainer.style.height = '40px';
-  tvMinimizeBtn.style.display = 'none';
-  tvRestoreBtn.style.display = 'inline-block';
-  // Скрываем iframe при свёрнутом окне
-  tvIframe.style.display = 'none';
-});
+  gamesHeaderBtn.addEventListener('click', () => {
+    gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
+  });
 
-tvRestoreBtn.addEventListener('click', () => {
-  tvIframeContainer.style.height = '270px';
-  tvRestoreBtn.style.display = 'none';
-  tvMinimizeBtn.style.display = 'inline-block';
-  tvIframe.style.display = 'block';
-});
+  document.querySelectorAll('.games-list a').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      const name = el.dataset.name;
+      const url = el.dataset.url;
+      gamesList.style.display = 'none';
+      gamePopupTitleLeft.textContent = name;
+      gameIframeLeft.src = url;
+      gamePopupLeft.style.display = 'flex';
+      restoreGame.style.display = 'none';
+      minimizeGame.style.display = 'inline-block';
+      gamePopupLeft.classList.remove('minimized');
+      gameIframeLeft.style.display = 'block';
+      tvIframeContainer.style.display = 'none';
+      if (!audio.paused) {
+        audio.pause();
+        playRadioControlBtn.textContent = '▶ Включить радио';
+      }
+    });
+  });
 </script>
 </body>
 </html>
