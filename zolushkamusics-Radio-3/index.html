@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DJ Room с радио, ТВ, чатом, играми и визуализацией</title>
 <style>
   body {
@@ -45,10 +45,11 @@
   }
   #tv-iframe-container {
     position: fixed;
-    bottom: 50px;
-    right: 20px;
-    width: 500px;
-    height: 300px;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    width: 480px;
+    height: 270px;
     background: #000;
     border: 2px solid #84cc16;
     border-radius: 12px;
@@ -61,7 +62,6 @@
     height: 100%;
     border: none;
   }
-
   .main {
     display: flex;
     gap: 20px;
@@ -151,17 +151,17 @@
 <div class="container">
 
   <div class="player-area">
-    <button id="radioBtn" title="Включить радио">
+    <button id="playBtn" title="Включить радио">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M4 8v10h16V8H4zm14 8H6v-6h12v6zm-6-7a2 2 0 110 4 2 2 0 010-4zm0 3a1 1 0 100-2 1 1 0 000 2z"/>
       </svg>
-      Радио
+      Включить радио
     </button>
     <button id="tvBtn" title="Включить ТВ">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M21 6h-7.17l3.58-3.59L16 2l-6 6 6 6 1.41-1.41L13.83 8H21zM3 18h18v2H3z"/>
+        <path d="M21 6h-7.17l3.58-3.59L16 2l-6 6 6 6 1.41-1.41L13.83 8H21z"/>
       </svg>
-      ТВ
+      Включить ТВ
     </button>
   </div>
 
@@ -176,9 +176,7 @@
       </div>
       <div class="title">Volnorez Radio</div>
       <div class="sub">Live stream</div>
-      <div>
-        <button id="playBtn">Включить радио</button>
-      </div>
+      
       <button class="games-header" title="Список доступных игр">СПИСОК ИГР</button>
       <div class="games-list" title="Список игр">
         <div>Список игр</div>
@@ -212,28 +210,13 @@
 
 <audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
 
-<div id="gamePopupLeft" style="display:none; position: fixed; top: 70px; left: 210px; width: 600px; height: 400px; background: #111; border-radius: 12px; box-shadow: 0 0 10px #000; color: #eee; overflow: hidden; z-index: 1000; flex-direction: column;">
-  <div style="display:flex; justify-content: space-between; align-items: center; background: #222; padding: 10px; font-weight: bold;">
-    <span id="gamePopupTitleLeft">Игра</span>
-    <div>
-      <button id="closeGamePopupLeft" title="Закрыть окно" style="background:none; border:none; color:#eee; font-size:20px; cursor:pointer;">×</button>
-    </div>
-  </div>
-  <iframe id="gameIframeLeft" src="" style="border:none; width: 100%; height: calc(100% - 40px);"></iframe>
-</div>
-
 <script>
   const tvIframeContainer = document.getElementById('tv-iframe-container');
-  const radioBtn = document.getElementById('radioBtn');
+  const playBtn = document.getElementById('playBtn');
   const tvBtn = document.getElementById('tvBtn');
   const audio = document.getElementById('audio');
-  const playBtn = document.getElementById('playBtn');
   const gamesHeaderBtn = document.querySelector('.games-header');
   const gamesList = document.querySelector('.games-list');
-  const gamePopupLeft = document.getElementById('gamePopupLeft');
-  const gameIframeLeft = document.getElementById('gameIframeLeft');
-  const gamePopupTitleLeft = document.getElementById('gamePopupTitleLeft');
-  const closeGamePopupLeft = document.getElementById('closeGamePopupLeft');
 
   let audioCtx, analyser, source, freqData;
   let artCtx, artCanvas, artAnalyser, artFreqData;
@@ -299,37 +282,28 @@
 
     if (audio.paused) {
       audio.play();
-      playBtn.textContent = '⏸ Pause';
+      playBtn.textContent = '⏸ Пауза';
       drawArtSpectrum();
-      // При включении радио ТВ окно скрыть
+      // При включении радио скрываем ТВ окно
       tvIframeContainer.style.display = 'none';
-      gamePopupLeft.style.display = 'none';
     } else {
       audio.pause();
       playBtn.textContent = '▶ Включить радио';
     }
   });
 
-  const tvIframeContainer = document.createElement('section');
-  tvIframeContainer.id = 'tv-iframe-container';
-  tvIframeContainer.style.cssText = 'position: fixed; bottom: 50px; right: 20px; width: 500px; height: 300px; background: #000; border: 2px solid #84cc16; border-radius: 12px; overflow: hidden; display: none; z-index: 10000;';
-  tvIframeContainer.innerHTML = '<iframe id="tv-iframe" src="https://smotret.tv/" allowfullscreen title="Смотреть ТВ" style="width:100%; height:100%; border:none;"></iframe>';
-  document.body.appendChild(tvIframeContainer);
-
   tvBtn.addEventListener('click', () => {
     if (!audio.paused) {
       audio.pause();
       playBtn.textContent = '▶ Включить радио';
     }
-    gamePopupLeft.style.display = 'none';
     tvIframeContainer.style.display = 'block';
   });
 
   radioBtn.addEventListener('click', () => {
     audio.play();
-    playBtn.textContent = '⏸ Pause';
+    playBtn.textContent = '⏸ Пауза';
     tvIframeContainer.style.display = 'none';
-    gamePopupLeft.style.display = 'none';
     drawArtSpectrum();
   });
 
@@ -346,55 +320,17 @@
       gamePopupTitleLeft.textContent = name;
       gameIframeLeft.src = url;
       gamePopupLeft.style.display = 'flex';
-      gamePopupLeft.style.height = '400px';
       restoreGame.style.display = 'none';
       minimizeGame.style.display = 'inline-block';
       gamePopupLeft.classList.remove('minimized');
       gameIframeLeft.style.display = 'block';
-      // При запуске игры ТВ и радио скрываем
+      // При запуске игры ТВ окно скрыть и радио выключить
       tvIframeContainer.style.display = 'none';
-      if(!audio.paused) {
+      if (!audio.paused) {
         audio.pause();
         playBtn.textContent = '▶ Включить радио';
       }
     });
-  });
-
-  const closeGamePopupLeft = document.getElementById('closeGamePopupLeft');
-  const minimizeGame = document.createElement('button');
-  minimizeGame.textContent = '–';
-  minimizeGame.title = 'Свернуть окно';
-  minimizeGame.style.cssText = 'background:none; border:none; color:#eee; font-size:20px; cursor:pointer; margin-left:8px;';
-
-  const restoreGame = document.createElement('button');
-  restoreGame.textContent = '□';
-  restoreGame.title = 'Развернуть окно';
-  restoreGame.style.cssText = 'background:none; border:none; color:#eee; font-size:20px; cursor:pointer; margin-left:8px; display:none;';
-
-  closeGamePopupLeft.parentNode.insertBefore(minimizeGame, closeGamePopupLeft);
-  closeGamePopupLeft.parentNode.insertBefore(restoreGame, closeGamePopupLeft);
-
-  minimizeGame.addEventListener('click', () => {
-    gameIframeLeft.style.display = 'none';
-    gamePopupLeft.style.height = '40px';
-    gamePopupLeft.style.top = '50px';
-    minimizeGame.style.display = 'none';
-    restoreGame.style.display = 'inline-block';
-    gamePopupLeft.classList.add('minimized');
-  });
-
-  restoreGame.addEventListener('click', () => {
-    gameIframeLeft.style.display = 'block';
-    gamePopupLeft.style.height = '400px';
-    gamePopupLeft.style.top = '70px';
-    restoreGame.style.display = 'none';
-    minimizeGame.style.display = 'inline-block';
-    gamePopupLeft.classList.remove('minimized');
-  });
-
-  closeGamePopupLeft.addEventListener('click', () => {
-    gamePopupLeft.style.display = 'none';
-    gameIframeLeft.src = '';
   });
 </script>
 </body>
