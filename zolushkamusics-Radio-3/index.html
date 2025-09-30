@@ -193,7 +193,7 @@
       <button id="tvRestoreBtn" title="Развернуть окно" style="display:none;">□</button>
       <button id="tvCloseBtn" title="Закрыть окно">×</button>
     </div>
-    <iframe id="tv-iframe" src="https://smotret.tv/" allowfullscreen title="Смотреть ТВ"></iframe>
+    <iframe id="tv-iframe" src="about:blank" allowfullscreen title="Смотреть ТВ"></iframe>
   </section>
 
   <div class="main">
@@ -203,9 +203,7 @@
       </div>
       <div class="title">Volnorez Radio</div>
       <div class="sub">Live stream</div>
-      <div>
-        <button id="playRadioControlBtn">Включить радио</button>
-      </div>
+
       <button class="games-header" title="Список доступных игр">СПИСОК ИГР</button>
       <div class="games-list" title="Список игр">
         <div>Список игр</div>
@@ -245,8 +243,8 @@ const tvIframe = document.getElementById('tv-iframe');
 const tvCloseBtn = document.getElementById('tvCloseBtn');
 const tvMinimizeBtn = document.getElementById('tvMinimizeBtn');
 const tvRestoreBtn = document.getElementById('tvRestoreBtn');
-const playRadioControlBtn = document.getElementById('playRadioControlBtn');
 const playBtn = document.getElementById('playBtn');
+const playTvBtn = document.getElementById('playTvBtn');
 const audio = document.getElementById('audio');
 const gamesHeaderBtn = document.querySelector('.games-header');
 const gamesList = document.querySelector('.games-list');
@@ -308,35 +306,48 @@ function drawArtSpectrum() {
   }
 }
 
-playRadioControlBtn.addEventListener('click', () => {
+playBtn.addEventListener('click', () => {
   initAudio();
+
+  // Если ТВ работает - выключаем
+  if (tvIframeContainer.style.display === 'flex') {
+    tvIframeContainer.style.display = 'none';
+    tvIframe.src = 'about:blank';
+  }
 
   if (audio.paused) {
     audio.play();
-    playRadioControlBtn.textContent = '⏸ Пауза';
+    playBtn.textContent = '⏸ Пауза радио';
     drawArtSpectrum();
-    tvIframeContainer.style.display = 'none';
   } else {
     audio.pause();
-    playRadioControlBtn.textContent = '▶ Включить радио';
+    playBtn.textContent = '▶ Включить радио';
   }
 });
 
 playTvBtn.addEventListener('click', () => {
+  // Остановить радио, если оно играет
   if (!audio.paused) {
     audio.pause();
-    playRadioControlBtn.textContent = '▶ Включить радио';
+    playBtn.textContent = '▶ Включить радио';
   }
-  tvIframeContainer.style.display = 'flex';
-  tvIframe.style.display = 'block';
-  tvRestoreBtn.style.display = 'none';
-  tvMinimizeBtn.style.display = 'inline-block';
+
+  if (tvIframeContainer.style.display === 'flex') {
+    // повторное нажатие - выключаем
+    tvIframeContainer.style.display = 'none';
+    tvIframe.src = 'about:blank';
+  } else {
+    tvIframeContainer.style.display = 'flex';
+    tvIframe.src = 'https://smotret.tv/';
+    tvIframe.style.display = 'block';
+    tvRestoreBtn.style.display = 'none';
+    tvMinimizeBtn.style.display = 'inline-block';
+  }
 });
 
 tvCloseBtn.addEventListener('click', () => {
-  // Полное отключение ТВ и скрытие окна при клике на крестик
   tvIframeContainer.style.display = 'none';
-  tvIframe.src = 'about:blank'; // Отключаем ТВ поток
+  tvIframe.src = 'about:blank';
 });
 
 tvMinimizeBtn.addEventListener('click', () => {
@@ -355,27 +366,6 @@ tvRestoreBtn.addEventListener('click', () => {
 
 gamesHeaderBtn.addEventListener('click', () => {
   gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
-});
-
-document.querySelectorAll('.games-list a').forEach(el => {
-  el.addEventListener('click', e => {
-    e.preventDefault();
-    const name = el.dataset.name;
-    const url = el.dataset.url;
-    gamesList.style.display = 'none';
-    gamePopupTitleLeft.textContent = name;
-    gameIframeLeft.src = url;
-    gamePopupLeft.style.display = 'flex';
-    restoreGame.style.display = 'none';
-    minimizeGame.style.display = 'inline-block';
-    gamePopupLeft.classList.remove('minimized');
-    gameIframeLeft.style.display = 'block';
-    tvIframeContainer.style.display = 'none';
-    if (!audio.paused) {
-      audio.pause();
-      playRadioControlBtn.textContent = '▶ Включить радио';
-    }
-  });
 });
 </script>
 </body>
