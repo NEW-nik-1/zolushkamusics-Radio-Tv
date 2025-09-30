@@ -124,10 +124,10 @@
     overflow: hidden;
     background: #111;
   }
-  #gamePopupLeft {
+  #gamePopupRight {
     position: fixed;
     top: 70px;
-    left: 210px;
+    right: 10px;
     width: 600px;
     height: 400px;
     background: #111;
@@ -139,7 +139,7 @@
     display: none;
     flex-direction: column;
   }
-  #gamePopupLeft > div.header {
+  #gamePopupRight > div.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -147,14 +147,14 @@
     padding: 10px;
     font-weight: bold;
   }
-  #gamePopupLeft button.close-btn {
+  #gamePopupRight button.close-btn {
     background: none;
     border: none;
     color: #eee;
     font-size: 20px;
     cursor: pointer;
   }
-  #gamePopupLeft iframe {
+  #gamePopupRight iframe {
     border: none;
     width: 100%;
     height: calc(100% - 40px);
@@ -206,12 +206,12 @@
       </div>
     </div>
   </div>
-  <div id="gamePopupLeft">
+  <div id="gamePopupRight">
     <div class="header">
-      <span id="gamePopupTitle">Игра</span>
-      <button class="close-btn" id="closeGamePopup" title="Закрыть окно">×</button>
+      <span id="gamePopupTitleRight">Игра</span>
+      <button class="close-btn" id="closeGamePopupRight" title="Закрыть окно">×</button>
     </div>
-    <iframe id="gameIframe" src=""></iframe>
+    <iframe id="gameIframeRight" src=""></iframe>
   </div>
 </div>
 
@@ -222,10 +222,10 @@ const audio = document.getElementById('audio');
 const playBtn = document.getElementById('playBtn');
 const gamesHeaderBtn = document.querySelector('.games-header');
 const gamesList = document.querySelector('.games-list');
-const gamePopupLeft = document.getElementById('gamePopupLeft');
-const gameIframe = document.getElementById('gameIframe');
-const gamePopupTitle = document.getElementById('gamePopupTitle');
-const closeGamePopup = document.getElementById('closeGamePopup');
+const gamePopupRight = document.getElementById('gamePopupRight');
+const gameIframeRight = document.getElementById('gameIframeRight');
+const gamePopupTitleRight = document.getElementById('gamePopupTitleRight');
+const closeGamePopupRight = document.getElementById('closeGamePopupRight');
 
 playBtn.addEventListener('click', () => {
   if (audio.paused) {
@@ -248,16 +248,16 @@ document.querySelectorAll('.games-list a').forEach(el => {
     const url = el.dataset.url;
     // Скрываем список игр при выборе
     gamesList.style.display = 'none';
-    // Показываем окно игры слева с правильными параметрами
-    gamePopupTitle.textContent = name;
-    gameIframe.src = url;
-    gamePopupLeft.style.display = 'flex';
+    // Показываем окно игры справа
+    gamePopupTitleRight.textContent = name;
+    gameIframeRight.src = url;
+    gamePopupRight.style.display = 'flex';
   });
 });
 
-closeGamePopup.addEventListener('click', () => {
-  gamePopupLeft.style.display = 'none';
-  gameIframe.src = '';
+closeGamePopupRight.addEventListener('click', () => {
+  gamePopupRight.style.display = 'none';
+  gameIframeRight.src = '';
 });
 </script>
 
