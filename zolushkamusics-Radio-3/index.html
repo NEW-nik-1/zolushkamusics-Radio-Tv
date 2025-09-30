@@ -85,7 +85,7 @@
       </div>
     </div>
     <div class="right-col">
-      <div id="volnorez_chat" data-code="001f69a7">
+      <div id="volnorez_chat" data-code="001f69a7" data-skin="skin_4" data-skin-params="'panel_clr':'213,213,213','msgbg_clr':'243,243,243'">
         <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
       </div>
     </div>
@@ -138,48 +138,105 @@ function drawArtSpectrum() {
   requestAnimationFrame(drawArtSpectrum);
   if (!artAnalyser) return;
   artAnalyser.getByteFrequencyData(artFreqData);
-  const w=artCanvas.width,h=artCanvas.height;
-  artCtx.clearRect(0,0,w,h);
-  const cnt=artFreqData.length/4, bw=w/cnt;
-  for(let i=0;i<cnt;i++){
-    const val=artFreqData[i], bh=val*(h/256), x=i*bw, y=h-bh;
-    const g=artCtx.createLinearGradient(0,y,0,y+bh);
-    g.addColorStop(0,'#f59e0b'); g.addColorStop(1,'#84cc16');
-    artCtx.fillStyle=g; artCtx.fillRect(x,y,bw-1,bh);
+  const w = artCanvas.width, h = artCanvas.height;
+  artCtx.clearRect(0, 0, w, h);
+  const count = artFreqData.length / 4;
+  const barWidth = w / count;
+  for (let i = 0; i < count; i++) {
+    const val = artFreqData[i];
+    const barHeight = val * (h / 256);
+    const x = i * barWidth;
+    const y = h - barHeight;
+    const gradient = artCtx.createLinearGradient(0, y, 0, y + barHeight);
+    gradient.addColorStop(0, '#f59e0b');
+    gradient.addColorStop(1, '#84cc16');
+    artCtx.fillStyle = gradient;
+    artCtx.fillRect(x, y, barWidth - 1, barHeight);
   }
 }
 
 playBtn.addEventListener('click', () => {
   initAudio();
-  tvIframeContainer.style.display='none'; tvIframe.src='about:blank';
-  gameIframeContainer.style.display='none'; gameIframe.src='about:blank';
-  if(audio.paused){ audio.play(); playBtn.textContent='⏸ Пауза радио'; drawArtSpectrum(); }
-  else{ audio.pause(); playBtn.textContent='▶ Включить радио'; }
+  tvIframeContainer.style.display = 'none';
+  tvIframe.src = 'about:blank';
+  gameIframeContainer.style.display = 'none';
+  gameIframe.src = 'about:blank';
+  if (audio.paused) {
+    audio.play();
+    playBtn.textContent = '⏸ Пауза радио';
+    drawArtSpectrum();
+  } else {
+    audio.pause();
+    playBtn.textContent = '▶ Включить радио';
+  }
 });
 
 playTvBtn.addEventListener('click', () => {
-  if(!audio.paused){ audio.pause(); playBtn.textContent='▶ Включить радио'; }
-  gameIframeContainer.style.display='none'; gameIframe.src='about:blank';
-  if(tvIframeContainer.style.display==='flex'){ tvIframeContainer.style.display='none'; tvIframe.src='about:blank'; }
-  else{ tvIframeContainer.style.display='flex'; tvIframe.src='https://smotret.tv/'; }
+  if (!audio.paused) {
+    audio.pause();
+    playBtn.textContent = '▶ Включить радио';
+  }
+  gameIframeContainer.style.display = 'none';
+  gameIframe.src = 'about:blank';
+  if (tvIframeContainer.style.display === 'flex') {
+    tvIframeContainer.style.display = 'none';
+    tvIframe.src = 'about:blank';
+  } else {
+    tvIframeContainer.style.display = 'flex';
+    tvIframe.src = 'https://smotret.tv/';
+  }
 });
 
-tvCloseBtn.onclick=()=>{tvIframeContainer.style.display='none'; tvIframe.src='about:blank';}
-tvMinimizeBtn.onclick=()=>{tvIframeContainer.style.height='40px'; tvMinimizeBtn.style.display='none'; tvRestoreBtn.style.display='inline-block'; tvIframe.style.display='none';}
-tvRestoreBtn.onclick=()=>{tvIframeContainer.style.height='270px'; tvRestoreBtn.style.display='none'; tvMinimizeBtn.style.display='inline-block'; tvIframe.style.display='block';}
-gameCloseBtn.onclick=()=>{gameIframeContainer.style.display='none'; gameIframe.src='about:blank';}
-gameMinimizeBtn.onclick=()=>{gameIframeContainer.style.height='40px'; gameMinimizeBtn.style.display='none'; gameRestoreBtn.style.display='inline-block'; gameIframe.style.display='none';}
-gameRestoreBtn.onclick=()=>{gameIframeContainer.style.height='270px'; gameRestoreBtn.style.display='none'; gameMinimizeBtn.style.display='inline-block'; gameIframe.style.display='block';}
+tvCloseBtn.onclick = () => {
+  tvIframeContainer.style.display = 'none';
+  tvIframe.src = 'about:blank';
+}
+tvMinimizeBtn.onclick = () => {
+  tvIframeContainer.style.height = '40px';
+  tvMinimizeBtn.style.display = 'none';
+  tvRestoreBtn.style.display = 'inline-block';
+  tvIframe.style.display = 'none';
+}
+tvRestoreBtn.onclick = () => {
+  tvIframeContainer.style.height = '270px';
+  tvRestoreBtn.style.display = 'none';
+  tvMinimizeBtn.style.display = 'inline-block';
+  tvIframe.style.display = 'block';
+}
+gameCloseBtn.onclick = () => {
+  gameIframeContainer.style.display = 'none';
+  gameIframe.src = 'about:blank';
+}
+gameMinimizeBtn.onclick = () => {
+  gameIframeContainer.style.height = '40px';
+  gameMinimizeBtn.style.display = 'none';
+  gameRestoreBtn.style.display = 'inline-block';
+  gameIframe.style.display = 'none';
+}
+gameRestoreBtn.onclick = () => {
+  gameIframeContainer.style.height = '270px';
+  gameRestoreBtn.style.display = 'none';
+  gameMinimizeBtn.style.display = 'inline-block';
+  gameIframe.style.display = 'block';
+}
 
-gamesHeaderBtn.onclick=()=>{gamesList.style.display=(gamesList.style.display==='block')?'none':'block';}
-document.querySelectorAll('.games-list a').forEach(el=>{
-  el.onclick=e=>{
+gamesHeaderBtn.onclick = () => {
+  gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
+};
+
+document.querySelectorAll('.games-list a').forEach(el => {
+  el.onclick = e => {
     e.preventDefault();
-    if(!audio.paused){ audio.pause(); playBtn.textContent='▶ Включить радио'; }
-    tvIframeContainer.style.display='none'; tvIframe.src='about:blank';
-    gameIframeContainer.style.display='flex'; gameIframe.src=el.dataset.url;
-    gamesList.style.display='none';
-  }
+    if (!audio.paused) {
+      audio.pause();
+      playBtn.textContent = '▶ Включить радио';
+    }
+    tvIframeContainer.style.display = 'none';
+    tvIframe.src = 'about:blank';
+    gameIframeContainer.style.display = 'flex';
+    gameIframe.src = el.dataset.url;
+    gamesList.style.display = 'none';
+  };
 });
 </script>
 </body>
