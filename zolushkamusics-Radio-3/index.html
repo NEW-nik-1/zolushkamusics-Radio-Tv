@@ -48,7 +48,7 @@
 <div class="container">
 
   <div class="player-area">
-    <button id="playBtn" title="Радио"></button>
+    <button id="playBtn" title="Радио">⏸ Радио</button>
     <button id="playTvBtn" title="ТВ">Включить ТВ</button>
   </div>
 
@@ -80,6 +80,7 @@
         <ul>
           <li><a href="#" data-url="https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/">Gary's World</a></li>
           <li><a href="#" data-url="https://www.onlinegames.io/games/2021/unity2/crazy-ball-adventures/index.html">Crazy Ball Adventures</a></li>
+          <li><a href="#" data-url="https://www.gamenora.com/embed/subway-horror-chapter-1">Subway Horror</a></li>
         </ul>
       </div>
     </div>
@@ -137,9 +138,9 @@ function drawArtSpectrum() {
   requestAnimationFrame(drawArtSpectrum);
   if (!artAnalyser) return;
   artAnalyser.getByteFrequencyData(artFreqData);
-  const w = artCanvas.width, h = artCanvas.height;
+  const w=artCanvas.width,h=artCanvas.height;
   artCtx.clearRect(0,0,w,h);
-  const cnt = artFreqData.length/4, bw=w/cnt;
+  const cnt=artFreqData.length/4, bw=w/cnt;
   for(let i=0;i<cnt;i++){
     const val=artFreqData[i], bh=val*(h/256), x=i*bw, y=h-bh;
     const g=artCtx.createLinearGradient(0,y,0,y+bh);
