@@ -3,36 +3,34 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DJ Room с радио, ТВ, чатом, играми и визуализацией</title>
+<title>DJ Room с радио, ТВ, чат и играми</title>
 <style>
   body {
     margin: 0;
+    font-family: Inter, system-ui, -apple-system;
     background: #1f1230;
     color: #eee;
-    font-family: Inter, system-ui, -apple-system;
   }
   .container {
     max-width: 1200px;
     margin: 20px auto;
-    position: relative;
   }
   .player-area {
     display: flex;
-    align-items: center;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
   button {
     cursor: pointer;
     border: none;
     background: #84cc16;
     color: #111;
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 8px 16px;
     font-size: 14px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
   button:focus {
     outline: none;
@@ -45,12 +43,11 @@
   }
   #tv-iframe-container {
     position: fixed;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
+    left: 20px;
+    top: 80px;
     width: 480px;
     height: 270px;
-    background: #000;
+    background-color: #000;
     border: 2px solid #84cc16;
     border-radius: 12px;
     overflow: hidden;
@@ -86,7 +83,6 @@
   #artSpectrum {
     width: 120px;
     height: 80px;
-    display: block;
   }
   .title {
     font-weight: 700;
@@ -151,13 +147,13 @@
 <div class="container">
 
   <div class="player-area">
-    <button id="playBtn" title="Включить радио">
+    <button id="playRadioBtn" title="Включить радио">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M4 8v10h16V8H4zm14 8H6v-6h12v6zm-6-7a2 2 0 110 4 2 2 0 010-4zm0 3a1 1 0 100-2 1 1 0 000 2z"/>
       </svg>
       Включить радио
     </button>
-    <button id="tvBtn" title="Включить ТВ">
+    <button id="playTvBtn" title="Включить ТВ">
       <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M21 6h-7.17l3.58-3.59L16 2l-6 6 6 6 1.41-1.41L13.83 8H21z"/>
       </svg>
@@ -176,7 +172,9 @@
       </div>
       <div class="title">Volnorez Radio</div>
       <div class="sub">Live stream</div>
-      
+      <div>
+        <button id="playBtn">Включить радио</button>
+      </div>
       <button class="games-header" title="Список доступных игр">СПИСОК ИГР</button>
       <div class="games-list" title="Список игр">
         <div>Список игр</div>
@@ -213,7 +211,8 @@
 <script>
   const tvIframeContainer = document.getElementById('tv-iframe-container');
   const playBtn = document.getElementById('playBtn');
-  const tvBtn = document.getElementById('tvBtn');
+  const playRadioBtn = document.getElementById('playRadioBtn');
+  const playTvBtn = document.getElementById('playTvBtn');
   const audio = document.getElementById('audio');
   const gamesHeaderBtn = document.querySelector('.games-header');
   const gamesList = document.querySelector('.games-list');
@@ -292,19 +291,13 @@
     }
   });
 
-  tvBtn.addEventListener('click', () => {
+  playTvBtn.addEventListener('click', () => {
     if (!audio.paused) {
       audio.pause();
       playBtn.textContent = '▶ Включить радио';
     }
+    // Показываем окно ТВ слева по центру ниже кнопок
     tvIframeContainer.style.display = 'block';
-  });
-
-  radioBtn.addEventListener('click', () => {
-    audio.play();
-    playBtn.textContent = '⏸ Пауза';
-    tvIframeContainer.style.display = 'none';
-    drawArtSpectrum();
   });
 
   gamesHeaderBtn.addEventListener('click', () => {
@@ -324,7 +317,7 @@
       minimizeGame.style.display = 'inline-block';
       gamePopupLeft.classList.remove('minimized');
       gameIframeLeft.style.display = 'block';
-      // При запуске игры ТВ окно скрыть и радио выключить
+      // При запуске игры скрыть ТВ и радио
       tvIframeContainer.style.display = 'none';
       if (!audio.paused) {
         audio.pause();
