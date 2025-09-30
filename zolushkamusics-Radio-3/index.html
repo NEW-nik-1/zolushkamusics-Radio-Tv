@@ -48,7 +48,7 @@
 <div class="container">
 
   <div class="player-area">
-    <button id="playBtn" title="Радио">⏸ Радио</button>
+    <button id="playBtn" title="Радио">▶ Включить радио</button>
     <button id="playTvBtn" title="ТВ">Включить ТВ</button>
   </div>
 
@@ -150,9 +150,10 @@ function drawArtSpectrum() {
 }
 
 playBtn.addEventListener('click', () => {
+  initAudio();
   tvIframeContainer.style.display='none'; tvIframe.src='about:blank';
   gameIframeContainer.style.display='none'; gameIframe.src='about:blank';
-  if(audio.paused){ audio.play(); playBtn.textContent='⏸ Пауза радио'; }
+  if(audio.paused){ audio.play(); playBtn.textContent='⏸ Пауза радио'; drawArtSpectrum(); }
   else{ audio.pause(); playBtn.textContent='▶ Включить радио'; }
 });
 
@@ -179,18 +180,6 @@ document.querySelectorAll('.games-list a').forEach(el=>{
     gameIframeContainer.style.display='flex'; gameIframe.src=el.dataset.url;
     gamesList.style.display='none';
   }
-});
-
-// ---- Автозапуск радио при загрузке ----
-window.addEventListener('load', () => {
-  initAudio();
-  audio.play().then(()=>{
-    drawArtSpectrum();
-    playBtn.textContent='⏸ Пауза радио';
-  }).catch(err=>{
-    console.log("Автозапуск заблокирован браузером:", err);
-    playBtn.textContent='▶ Включить радио';
-  });
 });
 </script>
 </body>
