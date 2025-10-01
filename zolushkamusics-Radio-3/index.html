@@ -1,4 +1,4 @@
-<!doctype html>
+<!doctype html> 
 <html lang="ru">
 <head>
 <meta charset="utf-8" />
@@ -157,11 +157,9 @@ function drawArtSpectrum() {
 
 playBtn.addEventListener('click', () => {
   initAudio();
-  // Закрываем ТВ и игры
+  // При включении радио закрываем ТВ
   tvIframeContainer.style.display = 'none';
   tvIframe.src = 'about:blank';
-  gameIframeContainer.style.display = 'none';
-  gameIframe.src = 'about:blank';
 
   if (audio.paused) {
     audio.play();
@@ -174,6 +172,7 @@ playBtn.addEventListener('click', () => {
 });
 
 playTvBtn.addEventListener('click', () => {
+  // При включении ТВ закрываем радио и игры
   if (!audio.paused) {
     audio.pause();
     playBtn.textContent = '▶ Включить радио';
@@ -230,12 +229,10 @@ gamesHeaderBtn.onclick = () => {
 document.querySelectorAll('.games-list a').forEach(el => {
   el.onclick = e => {
     e.preventDefault();
-    if (!audio.paused) {
-      audio.pause();
-      playBtn.textContent = '▶ Включить радио';
-    }
+    // При включении игры закрываем ТВ
     tvIframeContainer.style.display = 'none';
     tvIframe.src = 'about:blank';
+
     gameIframeContainer.style.display = 'flex';
     gameIframe.src = el.dataset.url;
     gamesList.style.display = 'none';
