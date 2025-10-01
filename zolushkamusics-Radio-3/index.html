@@ -22,18 +22,18 @@
   /* Размеры контейнеров ТВ и Игры увеличены */
   #tv-iframe-container, #game-iframe-container {
     position: fixed; left: 20px; top: 80px;
-    width: 700px;   /* увеличенная ширина */
-    height: 400px;  /* увеличенная высота */
+    width: 700px;
+    height: 400px;
     background: #000; border: 2px solid #84cc16; border-radius: 12px;
     overflow: hidden; display: none; z-index: 10000; flex-direction: column;
-    transition: height 0.2s, width 0.2s; /* плавное изменение размеров */
+    transition: height 0.2s, width 0.2s;
   }
 
-  /* Подсказка: Здесь можно изменить размер чата */
+  /* Размеры чата — задаются здесь */
   #volnorez_chat {
-    width: 100%;      /* можно установить нужную ширину, например '700px' */
-    height: 800px;    /* можно изменить высоту, например 500px */
-    /* Добавляйте при необходимости margin, padding, border */
+    width: 850px;      /* фиксированная ширина чата */
+    height: 850px;     /* фиксированная высота чата */
+    overflow-y: auto;  /* вертикальный скролл если наполненность превышает размер */
   }
 
   #tv-iframe-header, #game-iframe-header {
@@ -61,7 +61,7 @@
   .games-list ul { list-style: none; margin: 0; padding: 0; }
   .games-list ul li a { color: #84cc16; text-decoration: none; display: block; padding: 4px 0; cursor: pointer; }
 
-  .right-col { flex: 1; background: #1b1136; border-radius: 12px; padding: 12px; height: 400px; position: relative; }
+  .right-col { flex: 1; background: #1b1136; border-radius: 12px; padding: 12px; height: 900px; position: relative; } /* Высота родителя увеличена для чата */
   .game-tooltip-wrapper-corner {
     position: absolute; top: 5px; left: 5px; z-index: 10002;
   }
@@ -168,7 +168,7 @@ const games = [
   { name: "Traffic Tour", url: "https://traffictour.github.io/traffic-tour/" }
 ];
 
-// формируем список игр
+// динамическое создание списка игр
 games.forEach(game => {
   const li = document.createElement('li');
   const a = document.createElement('a');
@@ -243,8 +243,8 @@ playTvBtn.addEventListener('click', () => {
     tvIframe.src = 'about:blank';
   } else {
     tvIframeContainer.style.display = 'flex';
-    tvIframeContainer.style.height = '400px'; // увеличенная высота
-    tvIframeContainer.style.width = '700px';  // увеличенная ширина
+    tvIframeContainer.style.height = '400px';
+    tvIframeContainer.style.width = '700px';
     tvIframe.src = 'https://smotret.tv/';
   }
 });
