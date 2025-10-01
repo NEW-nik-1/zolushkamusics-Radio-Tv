@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8" />
@@ -18,23 +18,14 @@
     padding: 8px 16px; font-size: 14px; border-radius: 6px;
     display: flex; align-items: center; gap: 8px;
   }
-
+  /* Размеры контейнеров ТВ и Игры */
   #tv-iframe-container, #game-iframe-container {
     position: fixed; left: 20px; top: 80px;
-    width: 700px;
-    height: 400px;
+    width: 480px; height: 270px;
     background: #000; border: 2px solid #84cc16; border-radius: 12px;
     overflow: hidden; display: none; z-index: 10000; flex-direction: column;
     transition: height 0.2s, width 0.2s;
   }
-
-  /* Размеры чата */
-  #volnorez_chat {
-    width: 350px;      /* новая ширина */
-    height: 350px;     /* новая высота */
-    overflow-y: auto;  /* скролл при переполнении */
-  }
-
   #tv-iframe-header, #game-iframe-header {
     background: #222; padding: 6px 12px; display: flex; justify-content: flex-end; gap: 12px; user-select: none;
   }
@@ -43,13 +34,10 @@
     width: 24px; height: 24px; line-height: 24px; text-align: center; padding: 0;
   }
   #tv-iframe, #game-iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
+    width: 100%; height: 100%;
+    border: none; display: block;
     background: #000;
   }
-
   .main { display: flex; gap: 20px; }
   .left-col { width: 220px; background: #2b1f47; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; }
   .art { width: 120px; height: 80px; background: #111; border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
@@ -60,7 +48,19 @@
   .games-list ul { list-style: none; margin: 0; padding: 0; }
   .games-list ul li a { color: #84cc16; text-decoration: none; display: block; padding: 4px 0; cursor: pointer; }
 
-  .right-col { flex: 1; background: #1b1136; border-radius: 12px; padding: 12px; height: 900px; position: relative; } 
+  /* --- Чат (правая колонка) --- */
+  .right-col {
+    flex: 1;
+    background: #1b1136;
+    border-radius: 12px;
+    padding: 12px;
+    height: 400px;
+    min-height: 200px;
+    max-height: 90vh;
+    resize: vertical;   /* можно тянуть вниз */
+    overflow: hidden;   /* убрали скролл */
+  }
+
   .game-tooltip-wrapper-corner {
     position: absolute; top: 5px; left: 5px; z-index: 10002;
   }
@@ -116,15 +116,16 @@
       <div class="sub">Live stream</div>
       <button class="games-header">СПИСОК ИГР</button>
       <div class="games-list">
-        <ul id="gamesListContainer"></ul>
+        <ul>
+          <li><a href="#" data-url="https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/">Gary's World</a></li>
+          <li><a href="#" data-url="https://www.onlinegames.io/games/2021/unity2/crazy-ball-adventures/index.html">Crazy Ball Adventures</a></li>
+          <li><a href="#" data-url="https://www.gamenora.com/embed/subway-horror-chapter-1">Subway Horror</a></li>
+        </ul>
       </div>
     </div>
     <div class="right-col">
-      <!-- Чат -->
-      <div id="volnorez_chat" 
-           data-code="001f69a7" 
-           data-skin="skin_4" 
-           data-skin-params='{"panel_clr":"213,213,213","msgbg_clr":"243,243,243"}'>
+      <div id="volnorez_chat" data-code="001f69a7" data-skin="skin_4" data-skin-params="'panel_clr':'213,213,213','msgbg_clr':'243,243,243'">
+        <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
       </div>
     </div>
   </div>
@@ -132,12 +133,154 @@
 
 <audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
 
-<!-- Подключение чата -->
-<script async type="text/javascript" src="https://volnorez.com/plugins/jscode/chat_js"></script>
-
-<!-- ваш скрипт управления -->
 <script>
-/* ... ваш длинный JS-код без изменений ... */
+/* --- Радио, ТВ, Игры (управление) --- */
+const playBtn = document.getElementById('playBtn');
+const playTvBtn = document.getElementById('playTvBtn');
+const audio = document.getElementById('audio');
+
+const tvIframeContainer = document.getElementById('tv-iframe-container');
+const tvIframe = document.getElementById('tv-iframe');
+const tvCloseBtn = document.getElementById('tvCloseBtn');
+const tvMinimizeBtn = document.getElementById('tvMinimizeBtn');
+const tvRestoreBtn = document.getElementById('tvRestoreBtn');
+
+const gameIframeContainer = document.getElementById('game-iframe-container');
+const gameIframe = document.getElementById('game-iframe');
+const gameCloseBtn = document.getElementById('gameCloseBtn');
+const gameMinimizeBtn = document.getElementById('gameMinimizeBtn');
+const gameRestoreBtn = document.getElementById('gameRestoreBtn');
+
+const gamesHeaderBtn = document.querySelector('.games-header');
+const gamesList = document.querySelector('.games-list');
+
+let audioCtx, analyser, source, freqData;
+let artCtx, artCanvas, artAnalyser, artFreqData;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    source = audioCtx.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 1024;
+    freqData = new Uint8Array(analyser.frequencyBinCount);
+  }
+  if (!artCtx) {
+    artCanvas = document.getElementById('artSpectrum');
+    artCtx = artCanvas.getContext('2d');
+    artAnalyser = analyser;
+    artFreqData = freqData;
+  }
+}
+function drawArtSpectrum() {
+  requestAnimationFrame(drawArtSpectrum);
+  if (!artAnalyser) return;
+  artAnalyser.getByteFrequencyData(artFreqData);
+  const w = artCanvas.width, h = artCanvas.height;
+  artCtx.clearRect(0, 0, w, h);
+  const count = artFreqData.length / 4;
+  const barWidth = w / count;
+  for (let i = 0; i < count; i++) {
+    const val = artFreqData[i];
+    const barHeight = val * (h / 256);
+    const x = i * barWidth;
+    const y = h - barHeight;
+    const gradient = artCtx.createLinearGradient(0, y, 0, y + barHeight);
+    gradient.addColorStop(0, '#f59e0b');
+    gradient.addColorStop(1, '#84cc16');
+    artCtx.fillStyle = gradient;
+    artCtx.fillRect(x, y, barWidth - 1, barHeight);
+  }
+}
+
+playBtn.addEventListener('click', () => {
+  initAudio();
+  tvIframeContainer.style.display = 'none';
+  tvIframe.src = 'about:blank';
+  if (audio.paused) {
+    audio.play();
+    playBtn.textContent = '⏸ Пауза радио';
+    drawArtSpectrum();
+  } else {
+    audio.pause();
+    playBtn.textContent = '▶ Включить радио';
+  }
+});
+
+playTvBtn.addEventListener('click', () => {
+  if (!audio.paused) {
+    audio.pause();
+    playBtn.textContent = '▶ Включить радио';
+  }
+  gameIframeContainer.style.display = 'none';
+  gameIframe.src = 'about:blank';
+  if (tvIframeContainer.style.display === 'flex') {
+    tvIframeContainer.style.display = 'none';
+    tvIframe.src = 'about:blank';
+  } else {
+    tvIframeContainer.style.display = 'flex';
+    tvIframeContainer.style.height = '270px';
+    tvIframeContainer.style.width = '480px';
+    tvIframe.src = 'https://smotret.tv/';
+  }
+});
+
+tvCloseBtn.onclick = () => {
+  tvIframeContainer.style.display = 'none';
+  tvIframe.src = 'about:blank';
+}
+tvMinimizeBtn.onclick = () => {
+  tvIframeContainer.style.height = '40px';
+  tvIframeContainer.style.width = '480px';
+  tvMinimizeBtn.style.display = 'none';
+  tvRestoreBtn.style.display = 'inline-block';
+}
+tvRestoreBtn.onclick = () => {
+  tvIframeContainer.style.height = '270px';
+  tvIframeContainer.style.width = '480px';
+  tvRestoreBtn.style.display = 'none';
+  tvMinimizeBtn.style.display = 'inline-block';
+}
+
+gameCloseBtn.onclick = () => {
+  gameIframeContainer.style.display = 'none';
+  gameIframe.src = 'about:blank';
+}
+gameMinimizeBtn.onclick = () => {
+  gameIframeContainer.style.height = '40px';
+  gameIframeContainer.style.width = '480px';
+  gameMinimizeBtn.style.display = 'none';
+  gameRestoreBtn.style.display = 'inline-block';
+}
+gameRestoreBtn.onclick = () => {
+  gameIframeContainer.style.height = '270px';
+  gameIframeContainer.style.width = '480px';
+  gameRestoreBtn.style.display = 'none';
+  gameMinimizeBtn.style.display = 'inline-block';
+}
+
+gamesHeaderBtn.onclick = () => {
+  gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
+};
+
+document.querySelectorAll('.games-list a').forEach(el => {
+  el.onclick = e => {
+    e.preventDefault();
+    if (!audio.paused) {
+      audio.pause();
+      playBtn.textContent = '▶ Включить радио';
+    }
+    tvIframeContainer.style.display = 'none';
+    tvIframe.src = 'about:blank';
+    gameIframeContainer.style.display = 'flex';
+    gameIframeContainer.style.height = '270px';
+    gameIframeContainer.style.width = '480px';
+    gameIframe.src = el.dataset.url;
+    gamesList.style.display = 'none';
+  };
+});
 </script>
 </body>
 </html>
