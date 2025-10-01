@@ -3,82 +3,52 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DJ Room с уменьшенной высотой страницы и без прокрутки</title>
+<title>DJ Room с уменьшенным чатом</title>
 <style>
-  /* Ограничиваем высоту страницы и отключаем прокрутку окна браузера */
+  /* Ограничение высоты страницы и отключение прокрутки окна браузера */
   html, body {
-    height: 600px;      /* фиксированная высота страницы */
-    overflow: hidden;   /* отключаем прокрутку страницы */
+    height: 600px;
+    overflow: hidden;
     margin: 0;
     padding: 0;
   }
-
   body {
     font-family: Inter, system-ui, -apple-system;
     background: #1f1230;
     color: #eee;
   }
-
   .container {
     max-width: 1200px;
-    height: 100%;       /* занимает 100% высоты body */
+    height: 100%;
     margin: 0 auto;
-    overflow: auto;     /* внутренняя прокрутка, если контента больше */
+    overflow: auto;
   }
-
   .player-area { display: flex; gap: 12px; margin-bottom: 10px; }
   button {
-    cursor: pointer;
-    border: none;
-    background: #84cc16;
-    color: #111;
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    cursor: pointer; border: none; background: #84cc16; color: #111;
+    padding: 8px 16px; font-size: 14px; border-radius: 6px;
+    display: flex; align-items: center; gap: 8px;
   }
-
   #tv-iframe-container, #game-iframe-container {
     position: fixed; left: 20px; top: 80px;
     width: 700px;
     height: 400px;
-    background: #000;
-    border: 2px solid #84cc16;
-    border-radius: 12px;
-    overflow: hidden;
-    display: none;
-    z-index: 10000;
-    flex-direction: column;
+    background: #000; border: 2px solid #84cc16; border-radius: 12px;
+    overflow: hidden; display: none; z-index: 10000; flex-direction: column;
     transition: height 0.2s, width 0.2s;
   }
-
+  /* Уменьшенный по высоте чат без прокрутки */
   #volnorez_chat {
     width: 850px;
-    height: 850px;
-    overflow: hidden;
+    height: 400px; /* уменьшенная высота */
+    overflow: hidden; /* отключена прокрутка */
   }
-
   #tv-iframe-header, #game-iframe-header {
-    background: #222;
-    padding: 6px 12px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    user-select: none;
+    background: #222; padding: 6px 12px; display: flex; justify-content: flex-end; gap: 12px; user-select: none;
   }
   #tv-iframe-header button, #game-iframe-header button {
-    background: none;
-    border: none;
-    color: #eee;
-    font-size: 20px;
-    cursor: pointer;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    padding: 0;
+    background: none; border: none; color: #eee; font-size: 20px; cursor: pointer;
+    width: 24px; height: 24px; line-height: 24px; text-align: center; padding: 0;
   }
   #tv-iframe, #game-iframe {
     width: 100%;
@@ -87,97 +57,49 @@
     display: block;
     background: #000;
   }
-
   .main { display: flex; gap: 20px; }
   .left-col {
-    width: 220px;
-    background: #2b1f47;
-    padding: 16px;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    width: 220px; background: #2b1f47; padding: 16px; border-radius: 12px;
+    display: flex; flex-direction: column; gap: 15px;
   }
   .art {
-    width: 120px;
-    height: 80px;
-    background: #111;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 8px;
+    width: 120px; height: 80px; background: #111; border-radius: 8px;
+    overflow: hidden; margin-bottom: 8px;
   }
   .title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
   .sub { font-size: 13px; color: #bdbdbd; margin-bottom: 12px; }
   .games-header {
-    border: none;
-    background: #84cc16;
-    color: #111;
-    padding: 8px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
+    border: none; background: #84cc16; color: #111;
+    padding: 8px; border-radius: 6px; font-weight: 600; cursor: pointer;
   }
   .games-list {
-    background: #222;
-    border-radius: 8px;
-    padding: 12px;
-    max-height: 280px;
-    overflow-y: auto;
-    display: none;
+    background: #222; border-radius: 8px; padding: 12px;
+    max-height: 280px; overflow-y: auto; display: none;
   }
   .games-list ul { list-style: none; margin: 0; padding: 0; }
   .games-list ul li a {
-    color: #84cc16;
-    text-decoration: none;
-    display: block;
-    padding: 4px 0;
-    cursor: pointer;
+    color: #84cc16; text-decoration: none; display: block; padding: 4px 0; cursor: pointer;
   }
   .right-col {
-    flex: 1;
-    background: #1b1136;
-    border-radius: 12px;
-    padding: 12px;
-    height: 900px;
-    position: relative;
+    flex: 1; background: #1b1136; border-radius: 12px; padding: 12px;
+    height: 900px; position: relative;
   }
   .game-tooltip-wrapper-corner {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    z-index: 10002;
+    position: absolute; top: 5px; left: 5px; z-index: 10002;
   }
   .game-tooltip-wrapper-corner .game-tooltip-icon {
-    cursor: pointer;
-    background: #84cc16;
-    color: #111;
-    font-weight: bold;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
+    cursor: pointer; background: #84cc16; color: #111; font-weight: bold;
+    border-radius: 50%; width: 24px; height: 24px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px;
   }
   .game-tooltip-wrapper-corner .game-tooltip-text {
-    visibility: hidden;
-    width: 220px;
-    background-color: #222;
-    color: #eee;
-    text-align: center;
-    border-radius: 6px;
-    padding: 6px;
-    position: absolute;
-    z-index: 10001;
-    top: 30px;
-    left: 0;
-    opacity: 0;
+    visibility: hidden; width: 220px; background-color: #222; color: #eee;
+    text-align: center; border-radius: 6px; padding: 6px;
+    position: absolute; z-index: 10001; top: 30px; left: 0; opacity: 0;
     transition: opacity 0.3s;
   }
   .game-tooltip-wrapper-corner:hover .game-tooltip-text {
-    visibility: visible;
-    opacity: 1;
+    visibility: visible; opacity: 1;
   }
 </style>
 </head>
@@ -223,6 +145,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
@@ -265,7 +188,7 @@
     { name: "Traffic Tour", url: "https://traffictour.github.io/traffic-tour/" }
   ];
 
-  // динамическое создание списка игр
+  // формируем список игр на странице
   games.forEach(game => {
     const li = document.createElement('li');
     const a = document.createElement('a');
