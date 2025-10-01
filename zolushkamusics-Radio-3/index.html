@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DJ Room с адаптивным чатом без скролла</title>
+<title>DJ Room с увеличенной высотой чата</title>
 <style>
   html, body {
     margin: 0;
     padding: 0;
     height: 100%;
-    overflow: hidden; /* убирает прокрутку всей страницы */
+    overflow: hidden;
     font-family: Inter, system-ui, -apple-system;
     background: #1f1230;
     color: #eee;
@@ -18,7 +18,7 @@
     max-width: 1200px;
     height: 100%;
     margin: 0 auto;
-    overflow: auto; /* внутренняя прокрутка при необходимости */
+    overflow: auto;
   }
   .player-area { display: flex; gap: 12px; margin-bottom: 10px; }
   button {
@@ -34,13 +34,12 @@
     overflow: hidden; display: none; z-index: 10000; flex-direction: column;
     transition: height 0.2s, width 0.2s;
   }
-  /* Адаптивная высота чата без прокрутки */
+  /* Увеличенная высота чата */
   #volnorez_chat {
     width: 850px;
-    max-height: calc(500vh - 500px); /* подстраивается под высоту экрана минус отступ */
-    overflow: hidden; /* прокрутка отключена */
+    max-height: calc(100vh - 50px); /* уменьшаем вычет с 150 до 50 пикселей */
+    overflow: hidden;
   }
-  /* остальные стили как ранее */
   #tv-iframe-header, #game-iframe-header {
     background: #222; padding: 6px 12px; display: flex; justify-content: flex-end; gap: 12px; user-select: none;
   }
@@ -167,7 +166,7 @@
     { name: "Traffic Tour", url: "https://traffictour.github.io/traffic-tour/" }
   ];
 
-  // формируем список игр динамически
+  // динамически создаём список игр
   games.forEach(game => {
     const li = document.createElement('li');
     const a = document.createElement('a');
@@ -251,36 +250,36 @@
   tvCloseBtn.onclick = () => {
     tvIframeContainer.style.display = 'none';
     tvIframe.src = 'about:blank';
-  }
+  };
   tvMinimizeBtn.onclick = () => {
     tvIframeContainer.style.height = '40px';
     tvIframeContainer.style.width = '700px';
     tvMinimizeBtn.style.display = 'none';
     tvRestoreBtn.style.display = 'inline-block';
-  }
+  };
   tvRestoreBtn.onclick = () => {
     tvIframeContainer.style.height = '400px';
     tvIframeContainer.style.width = '700px';
     tvRestoreBtn.style.display = 'none';
     tvMinimizeBtn.style.display = 'inline-block';
-  }
+  };
 
   gameCloseBtn.onclick = () => {
     gameIframeContainer.style.display = 'none';
     gameIframe.src = 'about:blank';
-  }
+  };
   gameMinimizeBtn.onclick = () => {
     gameIframeContainer.style.height = '40px';
     gameIframeContainer.style.width = '700px';
     gameMinimizeBtn.style.display = 'none';
     gameRestoreBtn.style.display = 'inline-block';
-  }
+  };
   gameRestoreBtn.onclick = () => {
     gameIframeContainer.style.height = '400px';
     gameIframeContainer.style.width = '700px';
     gameRestoreBtn.style.display = 'none';
     gameMinimizeBtn.style.display = 'inline-block';
-  }
+  };
 
   gamesHeaderBtn.onclick = () => {
     gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
