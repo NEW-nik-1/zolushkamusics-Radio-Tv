@@ -11,42 +11,146 @@
     background: #1f1230;
     color: #eee;
   }
-  .container { max-width: 1200px; margin: 20px auto; }
-  .player-area { display: flex; gap: 12px; margin-bottom: 10px; }
-  button {
-    cursor: pointer; border: none; background: #84cc16; color: #111;
-    padding: 8px 16px; font-size: 14px; border-radius: 6px;
-    display: flex; align-items: center; gap: 8px;
+
+  .container { 
+    max-width: 1200px; 
+    margin: 20px auto; 
   }
+
+  .player-area { 
+    display: flex; 
+    gap: 12px; 
+    margin-bottom: 10px; 
+  }
+
+  button {
+    cursor: pointer; 
+    border: none; 
+    background: #84cc16; 
+    color: #111;
+    padding: 8px 16px; 
+    font-size: 14px; 
+    border-radius: 6px;
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+  }
+
   /* Размеры контейнеров ТВ и Игры */
   #tv-iframe-container, #game-iframe-container {
-    position: fixed; left: 20px; top: 80px;
-    width: 480px; height: 270px;
-    background: #000; border: 2px solid #84cc16; border-radius: 12px;
-    overflow: hidden; display: none; z-index: 10000; flex-direction: column;
+    position: fixed; 
+    left: 20px; 
+    top: 80px;
+    width: 728px;
+    height: 587px;
+    background: #000; 
+    border: 2px solid #84cc16; 
+    border-radius: 12px;
+    overflow: hidden; 
+    display: none; 
+    z-index: 10000; 
+    flex-direction: column;
     transition: height 0.2s, width 0.2s;
   }
+
   #tv-iframe-header, #game-iframe-header {
-    background: #222; padding: 6px 12px; display: flex; justify-content: flex-end; gap: 12px; user-select: none;
+    background: #222; 
+    padding: 6px 12px; 
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 12px; 
+    user-select: none;
   }
+
   #tv-iframe-header button, #game-iframe-header button {
-    background: none; border: none; color: #eee; font-size: 20px; cursor: pointer;
-    width: 24px; height: 24px; line-height: 24px; text-align: center; padding: 0;
+    background: none; 
+    border: none; 
+    color: #eee; 
+    font-size: 20px; 
+    cursor: pointer;
+    width: 24px; 
+    height: 24px; 
+    line-height: 24px; 
+    text-align: center; 
+    padding: 0;
   }
+
   #tv-iframe, #game-iframe {
-    width: 100%; height: 100%;
-    border: none; display: block;
+    width: 100%; 
+    height: 100%;
+    border: none; 
+    display: block;
     background: #000;
   }
-  .main { display: flex; gap: 20px; }
-  .left-col { width: 220px; background: #2b1f47; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; }
-  .art { width: 120px; height: 80px; background: #111; border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
-  .title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
-  .sub { font-size: 13px; color: #bdbdbd; margin-bottom: 12px; }
-  .games-header { border: none; background: #84cc16; color: #111; padding: 8px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-  .games-list { background: #222; border-radius: 8px; padding: 12px; max-height: 280px; overflow-y: auto; display: none; }
-  .games-list ul { list-style: none; margin: 0; padding: 0; }
-  .games-list ul li a { color: #84cc16; text-decoration: none; display: block; padding: 4px 0; cursor: pointer; }
+
+  .main { 
+    display: flex; 
+    gap: 20px; 
+  }
+
+  .left-col { 
+    width: 220px; 
+    background: #2b1f47; 
+    padding: 16px; 
+    border-radius: 12px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+  }
+
+  .art { 
+    width: 120px; 
+    height: 80px; 
+    background: #111; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    margin-bottom: 8px; 
+  }
+
+  .title { 
+    font-weight: 700; 
+    font-size: 16px; 
+    margin-bottom: 4px; 
+  }
+
+  .sub { 
+    font-size: 13px; 
+    color: #bdbdbd; 
+    margin-bottom: 12px; 
+  }
+
+  .games-header { 
+    border: none; 
+    background: #84cc16; 
+    color: #111; 
+    padding: 8px; 
+    border-radius: 6px; 
+    font-weight: 600; 
+    cursor: pointer; 
+  }
+
+  .games-list { 
+    background: #222; 
+    border-radius: 8px; 
+    padding: 12px; 
+    max-height: 280px; 
+    overflow-y: auto; 
+    display: none; 
+  }
+
+  .games-list ul { 
+    list-style: none; 
+    margin: 0; 
+    padding: 0; 
+  }
+
+  .games-list ul li a { 
+    color: #84cc16; 
+    text-decoration: none; 
+    display: block; 
+    padding: 4px 0; 
+    cursor: pointer; 
+  }
 
   /* --- Чат (правая колонка) --- */
   .right-col {
@@ -57,25 +161,7 @@
     height: 400px;
     min-height: 200px;
     max-height: 90vh;
-    resize: vertical;   /* можно тянуть вниз */
     overflow: hidden;   /* убрали скролл */
-  }
-
-  .game-tooltip-wrapper-corner {
-    position: absolute; top: 5px; left: 5px; z-index: 10002;
-  }
-  .game-tooltip-wrapper-corner .game-tooltip-icon {
-    cursor: pointer; background: #84cc16; color: #111; font-weight: bold;
-    border-radius: 50%; width: 24px; height: 24px; display: flex;
-    align-items: center; justify-content: center; font-size: 16px;
-  }
-  .game-tooltip-wrapper-corner .game-tooltip-text {
-    visibility: hidden; width: 220px; background-color: #222; color: #eee;
-    text-align: center; border-radius: 6px; padding: 6px; position: absolute;
-    z-index: 10001; top: 30px; left: 0; opacity: 0; transition: opacity 0.3s;
-  }
-  .game-tooltip-wrapper-corner:hover .game-tooltip-text {
-    visibility: visible; opacity: 1;
   }
 </style>
 </head>
@@ -101,10 +187,6 @@
       <button id="gameMinimizeBtn">–</button>
       <button id="gameRestoreBtn" style="display:none;">□</button>
       <button id="gameCloseBtn">×</button>
-    </div>
-    <div class="game-tooltip-wrapper-corner">
-      <span class="game-tooltip-icon">?</span>
-      <div class="game-tooltip-text">Звук игры можно отключить в настройках игры.</div>
     </div>
     <iframe id="game-iframe" src="about:blank" allowfullscreen></iframe>
   </section>
@@ -174,6 +256,7 @@ function initAudio() {
     artFreqData = freqData;
   }
 }
+
 function drawArtSpectrum() {
   requestAnimationFrame(drawArtSpectrum);
   if (!artAnalyser) return;
@@ -221,8 +304,8 @@ playTvBtn.addEventListener('click', () => {
     tvIframe.src = 'about:blank';
   } else {
     tvIframeContainer.style.display = 'flex';
-    tvIframeContainer.style.height = '270px';
-    tvIframeContainer.style.width = '480px';
+    tvIframeContainer.style.height = '587px';
+    tvIframeContainer.style.width = '728px';
     tvIframe.src = 'https://smotret.tv/';
   }
 });
@@ -231,15 +314,17 @@ tvCloseBtn.onclick = () => {
   tvIframeContainer.style.display = 'none';
   tvIframe.src = 'about:blank';
 }
+
 tvMinimizeBtn.onclick = () => {
   tvIframeContainer.style.height = '40px';
-  tvIframeContainer.style.width = '480px';
+  tvIframeContainer.style.width = '728px';
   tvMinimizeBtn.style.display = 'none';
   tvRestoreBtn.style.display = 'inline-block';
 }
+
 tvRestoreBtn.onclick = () => {
-  tvIframeContainer.style.height = '270px';
-  tvIframeContainer.style.width = '480px';
+  tvIframeContainer.style.height = '587px';
+  tvIframeContainer.style.width = '728px';
   tvRestoreBtn.style.display = 'none';
   tvMinimizeBtn.style.display = 'inline-block';
 }
@@ -248,15 +333,17 @@ gameCloseBtn.onclick = () => {
   gameIframeContainer.style.display = 'none';
   gameIframe.src = 'about:blank';
 }
+
 gameMinimizeBtn.onclick = () => {
   gameIframeContainer.style.height = '40px';
-  gameIframeContainer.style.width = '480px';
+  gameIframeContainer.style.width = '728px';
   gameMinimizeBtn.style.display = 'none';
   gameRestoreBtn.style.display = 'inline-block';
 }
+
 gameRestoreBtn.onclick = () => {
-  gameIframeContainer.style.height = '270px';
-  gameIframeContainer.style.width = '480px';
+  gameIframeContainer.style.height = '587px';
+  gameIframeContainer.style.width = '728px';
   gameRestoreBtn.style.display = 'none';
   gameMinimizeBtn.style.display = 'inline-block';
 }
@@ -275,8 +362,8 @@ document.querySelectorAll('.games-list a').forEach(el => {
     tvIframeContainer.style.display = 'none';
     tvIframe.src = 'about:blank';
     gameIframeContainer.style.display = 'flex';
-    gameIframeContainer.style.height = '270px';
-    gameIframeContainer.style.width = '480px';
+    gameIframeContainer.style.height = '587px';
+    gameIframeContainer.style.width = '728px';
     gameIframe.src = el.dataset.url;
     gamesList.style.display = 'none';
   };
