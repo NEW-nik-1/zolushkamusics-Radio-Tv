@@ -3,16 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DJ Room с уменьшенным чатом</title>
+<title>DJ Room с адаптивным чатом без скролла</title>
 <style>
-  /* Ограничение высоты страницы и отключение прокрутки окна браузера */
   html, body {
-    height: 600px;
-    overflow: hidden;
     margin: 0;
     padding: 0;
-  }
-  body {
+    height: 100%;
+    overflow: hidden; /* убирает прокрутку всей страницы */
     font-family: Inter, system-ui, -apple-system;
     background: #1f1230;
     color: #eee;
@@ -21,7 +18,7 @@
     max-width: 1200px;
     height: 100%;
     margin: 0 auto;
-    overflow: auto;
+    overflow: auto; /* внутренняя прокрутка при необходимости */
   }
   .player-area { display: flex; gap: 12px; margin-bottom: 10px; }
   button {
@@ -37,12 +34,13 @@
     overflow: hidden; display: none; z-index: 10000; flex-direction: column;
     transition: height 0.2s, width 0.2s;
   }
-  /* Уменьшенный по высоте чат без прокрутки */
+  /* Адаптивная высота чата без прокрутки */
   #volnorez_chat {
     width: 850px;
-    height: 400px; /* уменьшенная высота */
-    overflow: hidden; /* отключена прокрутка */
+    max-height: calc(100vh - 150px); /* подстраивается под высоту экрана минус отступ */
+    overflow: hidden; /* прокрутка отключена */
   }
+  /* остальные стили как ранее */
   #tv-iframe-header, #game-iframe-header {
     background: #222; padding: 6px 12px; display: flex; justify-content: flex-end; gap: 12px; user-select: none;
   }
@@ -58,32 +56,15 @@
     background: #000;
   }
   .main { display: flex; gap: 20px; }
-  .left-col {
-    width: 220px; background: #2b1f47; padding: 16px; border-radius: 12px;
-    display: flex; flex-direction: column; gap: 15px;
-  }
-  .art {
-    width: 120px; height: 80px; background: #111; border-radius: 8px;
-    overflow: hidden; margin-bottom: 8px;
-  }
+  .left-col { width: 220px; background: #2b1f47; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; }
+  .art { width: 120px; height: 80px; background: #111; border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
   .title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
   .sub { font-size: 13px; color: #bdbdbd; margin-bottom: 12px; }
-  .games-header {
-    border: none; background: #84cc16; color: #111;
-    padding: 8px; border-radius: 6px; font-weight: 600; cursor: pointer;
-  }
-  .games-list {
-    background: #222; border-radius: 8px; padding: 12px;
-    max-height: 280px; overflow-y: auto; display: none;
-  }
+  .games-header { border: none; background: #84cc16; color: #111; padding: 8px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+  .games-list { background: #222; border-radius: 8px; padding: 12px; max-height: 280px; overflow-y: auto; display: none; }
   .games-list ul { list-style: none; margin: 0; padding: 0; }
-  .games-list ul li a {
-    color: #84cc16; text-decoration: none; display: block; padding: 4px 0; cursor: pointer;
-  }
-  .right-col {
-    flex: 1; background: #1b1136; border-radius: 12px; padding: 12px;
-    height: 900px; position: relative;
-  }
+  .games-list ul li a { color: #84cc16; text-decoration: none; display: block; padding: 4px 0; cursor: pointer; }
+  .right-col { flex: 1; background: #1b1136; border-radius: 12px; padding: 12px; height: auto; position: relative; }
   .game-tooltip-wrapper-corner {
     position: absolute; top: 5px; left: 5px; z-index: 10002;
   }
@@ -94,9 +75,8 @@
   }
   .game-tooltip-wrapper-corner .game-tooltip-text {
     visibility: hidden; width: 220px; background-color: #222; color: #eee;
-    text-align: center; border-radius: 6px; padding: 6px;
-    position: absolute; z-index: 10001; top: 30px; left: 0; opacity: 0;
-    transition: opacity 0.3s;
+    text-align: center; border-radius: 6px; padding: 6px; position: absolute;
+    z-index: 10001; top: 30px; left: 0; opacity: 0; transition: opacity 0.3s;
   }
   .game-tooltip-wrapper-corner:hover .game-tooltip-text {
     visibility: visible; opacity: 1;
@@ -104,51 +84,50 @@
 </style>
 </head>
 <body>
-  <div class="container">
+<div class="container">
 
-    <div class="player-area">
-      <button id="playBtn" title="Радио">▶ Включить радио</button>
-      <button id="playTvBtn" title="ТВ">Включить ТВ</button>
-    </div>
-
-    <section id="tv-iframe-container">
-      <div id="tv-iframe-header">
-        <button id="tvMinimizeBtn">–</button>
-        <button id="tvRestoreBtn" style="display:none;">□</button>
-        <button id="tvCloseBtn">×</button>
-      </div>
-      <iframe id="tv-iframe" src="about:blank" allowfullscreen></iframe>
-    </section>
-
-    <section id="game-iframe-container">
-      <div id="game-iframe-header">
-        <button id="gameMinimizeBtn">–</button>
-        <button id="gameRestoreBtn" style="display:none;">□</button>
-        <button id="gameCloseBtn">×</button>
-      </div>
-      <iframe id="game-iframe" src="about:blank" allowfullscreen></iframe>
-    </section>
-
-    <div class="main">
-      <div class="left-col">
-        <div class="art"><canvas id="artSpectrum" width="120" height="80"></canvas></div>
-        <div class="title">Volnorez Radio</div>
-        <div class="sub">Live stream</div>
-        <button class="games-header">СПИСОК ИГР</button>
-        <div class="games-list">
-          <ul id="gamesListContainer"></ul>
-        </div>
-      </div>
-      <div class="right-col">
-        <div id="volnorez_chat" data-code="001f69a7" data-skin="skin_4" data-skin-params="'panel_clr':'213,213,213','msgbg_clr':'243,243,243'">
-          <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
-        </div>
-      </div>
-    </div>
-
+  <div class="player-area">
+    <button id="playBtn" title="Радио">▶ Включить радио</button>
+    <button id="playTvBtn" title="ТВ">Включить ТВ</button>
   </div>
 
-  <audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
+  <section id="tv-iframe-container">
+    <div id="tv-iframe-header">
+      <button id="tvMinimizeBtn">–</button>
+      <button id="tvRestoreBtn" style="display:none;">□</button>
+      <button id="tvCloseBtn">×</button>
+    </div>
+    <iframe id="tv-iframe" src="about:blank" allowfullscreen></iframe>
+  </section>
+
+  <section id="game-iframe-container">
+    <div id="game-iframe-header">
+      <button id="gameMinimizeBtn">–</button>
+      <button id="gameRestoreBtn" style="display:none;">□</button>
+      <button id="gameCloseBtn">×</button>
+    </div>
+    <iframe id="game-iframe" src="about:blank" allowfullscreen></iframe>
+  </section>
+
+  <div class="main">
+    <div class="left-col">
+      <div class="art"><canvas id="artSpectrum" width="120" height="80"></canvas></div>
+      <div class="title">Volnorez Radio</div>
+      <div class="sub">Live stream</div>
+      <button class="games-header">СПИСОК ИГР</button>
+      <div class="games-list">
+        <ul id="gamesListContainer"></ul>
+      </div>
+    </div>
+    <div class="right-col">
+      <div id="volnorez_chat" data-code="001f69a7" data-skin="skin_4" data-skin-params="'panel_clr':'213,213,213','msgbg_clr':'243,243,243'">
+        <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
 
 <script>
   const playBtn = document.getElementById('playBtn');
@@ -188,7 +167,7 @@
     { name: "Traffic Tour", url: "https://traffictour.github.io/traffic-tour/" }
   ];
 
-  // формируем список игр на странице
+  // формируем список игр динамически
   games.forEach(game => {
     const li = document.createElement('li');
     const a = document.createElement('a');
