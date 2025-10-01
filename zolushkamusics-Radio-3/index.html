@@ -18,15 +18,24 @@
     padding: 8px 16px; font-size: 14px; border-radius: 6px;
     display: flex; align-items: center; gap: 8px;
   }
-  /* Размеры контейнеров ТВ и Игры */
+
+  /* Размеры контейнеров ТВ и Игры увеличены */
   #tv-iframe-container, #game-iframe-container {
     position: fixed; left: 20px; top: 80px;
-    width: 480px;   /* → фиксированная ширина контейнера (ТВ или Игра) */
-    height: 270px;  /* → начальная стандартная высота контейнера */
+    width: 700px;   /* увеличенная ширина */
+    height: 400px;  /* увеличенная высота */
     background: #000; border: 2px solid #84cc16; border-radius: 12px;
     overflow: hidden; display: none; z-index: 10000; flex-direction: column;
     transition: height 0.2s, width 0.2s; /* плавное изменение размеров */
   }
+
+  /* Подсказка: Здесь можно изменить размер чата */
+  #volnorez_chat {
+    width: 100%;      /* можно установить нужную ширину, например '700px' */
+    height: 800px;    /* можно изменить высоту, например 500px */
+    /* Добавляйте при необходимости margin, padding, border */
+  }
+
   #tv-iframe-header, #game-iframe-header {
     background: #222; padding: 6px 12px; display: flex; justify-content: flex-end; gap: 12px; user-select: none;
   }
@@ -35,12 +44,13 @@
     width: 24px; height: 24px; line-height: 24px; text-align: center; padding: 0;
   }
   #tv-iframe, #game-iframe {
-    width: 100%;  /* → занимает всю ширину контейнера */
-    height: 100%; /* → занимает всю высоту контейнера */
+    width: 100%;
+    height: 100%;
     border: none;
     display: block;
     background: #000;
   }
+
   .main { display: flex; gap: 20px; }
   .left-col { width: 220px; background: #2b1f47; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 15px; }
   .art { width: 120px; height: 80px; background: #111; border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
@@ -50,7 +60,8 @@
   .games-list { background: #222; border-radius: 8px; padding: 12px; max-height: 280px; overflow-y: auto; display: none; }
   .games-list ul { list-style: none; margin: 0; padding: 0; }
   .games-list ul li a { color: #84cc16; text-decoration: none; display: block; padding: 4px 0; cursor: pointer; }
-  .right-col { flex: 1; background: #1b1136; border-radius: 12px; padding: 12px; height: 400px; }
+
+  .right-col { flex: 1; background: #1b1136; border-radius: 12px; padding: 12px; height: 400px; position: relative; }
   .game-tooltip-wrapper-corner {
     position: absolute; top: 5px; left: 5px; z-index: 10002;
   }
@@ -106,11 +117,7 @@
       <div class="sub">Live stream</div>
       <button class="games-header">СПИСОК ИГР</button>
       <div class="games-list">
-        <ul>
-          <li><a href="#" data-url="https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/">Gary's World</a></li>
-          <li><a href="#" data-url="https://www.onlinegames.io/games/2021/unity2/crazy-ball-adventures/index.html">Crazy Ball Adventures</a></li>
-          <li><a href="#" data-url="https://www.gamenora.com/embed/subway-horror-chapter-1">Subway Horror</a></li>
-        </ul>
+        <ul id="gamesListContainer"></ul>
       </div>
     </div>
     <div class="right-col">
@@ -142,9 +149,35 @@ const gameRestoreBtn = document.getElementById('gameRestoreBtn');
 
 const gamesHeaderBtn = document.querySelector('.games-header');
 const gamesList = document.querySelector('.games-list');
+const gamesListContainer = document.getElementById('gamesListContainer');
 
 let audioCtx, analyser, source, freqData;
 let artCtx, artCanvas, artAnalyser, artFreqData;
+
+const games = [
+  { name: "Gary's World", url: "https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/" },
+  { name: "Crazy Ball Adventures", url: "https://www.onlinegames.io/games/2021/unity2/crazy-ball-adventures/index.html" },
+  { name: "Subway Horror Chapter 1", url: "https://www.gamenora.com/embed/subway-horror-chapter-1" },
+  { name: "A Difficult Game About Climbing", url: "https://www.gamenora.com/embed/a-difficult-game-about-climbing" },
+  { name: "Cross The Road", url: "https://www.onlinegames.io/games/2023/unity/cross-the-road/index.html" },
+  { name: "Motorcycle Racer", url: "https://s3.eponesh.com/games/8866/" },
+  { name: "Moto Rider GO", url: "https://app-165758.games.s3.yandex.net/165758/ghtg4xyuxt09og6gtji0jcl6aw8el4w4/index.html" },
+  { name: "Motorbike Traffic", url: "https://www.onlinegames.io/games/2021/unity/motorbike-traffic/index.html" },
+  { name: "Turbo Moto Racer 3D", url: "https://www.gamenora.com/splash/turbo-moto-racer-3d/" },
+  { name: "ATV Highway Traffic", url: "https://www.onlinegames.io/games/2021/unity/atv-highway-traffic/index.html" },
+  { name: "Traffic Tour", url: "https://traffictour.github.io/traffic-tour/" }
+];
+
+// формируем список игр
+games.forEach(game => {
+  const li = document.createElement('li');
+  const a = document.createElement('a');
+  a.href = "#";
+  a.textContent = game.name;
+  a.dataset.url = game.url;
+  li.appendChild(a);
+  gamesListContainer.appendChild(li);
+});
 
 function initAudio() {
   if (!audioCtx) {
@@ -210,8 +243,8 @@ playTvBtn.addEventListener('click', () => {
     tvIframe.src = 'about:blank';
   } else {
     tvIframeContainer.style.display = 'flex';
-    tvIframeContainer.style.height = '270px'; // начальная высота ТВ
-    tvIframeContainer.style.width = '480px';  // начальная ширина ТВ
+    tvIframeContainer.style.height = '400px'; // увеличенная высота
+    tvIframeContainer.style.width = '700px';  // увеличенная ширина
     tvIframe.src = 'https://smotret.tv/';
   }
 });
@@ -221,18 +254,16 @@ tvCloseBtn.onclick = () => {
   tvIframe.src = 'about:blank';
 }
 tvMinimizeBtn.onclick = () => {
-  tvIframeContainer.style.height = '40px';  // уменьшаем высоту ТВ
-  tvIframeContainer.style.width = '480px';  // фиксируем ширину ТВ при сворачивании
+  tvIframeContainer.style.height = '40px';
+  tvIframeContainer.style.width = '700px';
   tvMinimizeBtn.style.display = 'none';
   tvRestoreBtn.style.display = 'inline-block';
-  tvIframe.style.display = 'block';
 }
 tvRestoreBtn.onclick = () => {
-  tvIframeContainer.style.height = '270px'; // восстанавливаем высоту ТВ
-  tvIframeContainer.style.width = '480px';  // восстанавливаем ширину ТВ
+  tvIframeContainer.style.height = '400px';
+  tvIframeContainer.style.width = '700px';
   tvRestoreBtn.style.display = 'none';
   tvMinimizeBtn.style.display = 'inline-block';
-  tvIframe.style.display = 'block';
 }
 
 gameCloseBtn.onclick = () => {
@@ -240,35 +271,33 @@ gameCloseBtn.onclick = () => {
   gameIframe.src = 'about:blank';
 }
 gameMinimizeBtn.onclick = () => {
-  gameIframeContainer.style.height = '40px';  // уменьшаем высоту Игрового контейнера
-  gameIframeContainer.style.width = '480px';  // фиксируем ширину Игры при сворачивании
+  gameIframeContainer.style.height = '40px';
+  gameIframeContainer.style.width = '700px';
   gameMinimizeBtn.style.display = 'none';
   gameRestoreBtn.style.display = 'inline-block';
-  gameIframe.style.display = 'block';
 }
 gameRestoreBtn.onclick = () => {
-  gameIframeContainer.style.height = '270px'; // восстанавливаем высоту Игры
-  gameIframeContainer.style.width = '480px';  // восстанавливаем ширину Игры
+  gameIframeContainer.style.height = '400px';
+  gameIframeContainer.style.width = '700px';
   gameRestoreBtn.style.display = 'none';
   gameMinimizeBtn.style.display = 'inline-block';
-  gameIframe.style.display = 'block';
 }
 
 gamesHeaderBtn.onclick = () => {
   gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
 };
 
-document.querySelectorAll('.games-list a').forEach(el => {
-  el.onclick = e => {
+gamesListContainer.addEventListener('click', e => {
+  if (e.target.tagName === 'A') {
     e.preventDefault();
     tvIframeContainer.style.display = 'none';
     tvIframe.src = 'about:blank';
     gameIframeContainer.style.display = 'flex';
-    gameIframeContainer.style.height = '270px'; // начальная высота Игры
-    gameIframeContainer.style.width = '480px';  // начальная ширина Игры
-    gameIframe.src = el.dataset.url;
+    gameIframeContainer.style.height = '400px';
+    gameIframeContainer.style.width = '700px';
+    gameIframe.src = e.target.dataset.url;
     gamesList.style.display = 'none';
-  };
+  }
 });
 </script>
 </body>
