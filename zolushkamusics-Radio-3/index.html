@@ -1,373 +1,374 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DJ Room с радио, ТВ, чат, играми и визуализацией</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DJ Room — Радио, Чат, Игры, ТВ</title>
 <style>
-  body {
+body {
     margin: 0;
     font-family: Inter, system-ui, -apple-system;
-    background: #1f1230;
+    background: url('https://raw.githubusercontent.com/NEW-nik-1/zolushkamusics-Radio-Tv/refs/heads/main/background.jpg') no-repeat center center fixed;
+    background-size: cover;
     color: #eee;
-  }
+}
+.container { max-width: 1000px; margin: 20px auto; display: flex; gap: 12px; }
+.left-panel { width: 780px; height: 450px; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; background: transparent; }
+.right-panel { width: 200px; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; align-items: center; background: transparent; }
 
-  .container { 
-    max-width: 1200px; 
-    margin: 20px auto; 
-  }
+.vu-meter { display: flex; gap: 4px; margin: 12px 0; }
+.vu-col { display: flex; flex-direction: column-reverse; align-items: center; }
+.vu-col canvas { width: 20px; height: 200px; background: transparent; border-radius: 3px; }
+.vu-col .label { font-size: 8px; margin-top: 1px; background: #ccc; color: #111; padding: 0 2px; border-radius: 2px; text-align: center; min-width: 35px; }
 
-  .player-area { 
-    display: flex; 
-    gap: 12px; 
-    margin-bottom: 10px; 
-  }
-
-  button {
-    cursor: pointer; 
-    border: none; 
-    background: #84cc16; 
-    color: #111;
-    padding: 8px 16px; 
-    font-size: 14px; 
-    border-radius: 6px;
-    display: flex; 
-    align-items: center; 
-    gap: 8px;
-  }
-
-  /* Размеры контейнеров ТВ и Игры */
-  #tv-iframe-container, #game-iframe-container {
-    position: fixed; 
-    left: 20px; 
-    top: 80px;
-    width: 728px;
-    height: 587px;
-    background: #000; 
-    border: 2px solid #84cc16; 
-    border-radius: 12px;
-    overflow: hidden; 
-    display: none; 
-    z-index: 10000; 
-    flex-direction: column;
-    transition: height 0.2s, width 0.2s;
-  }
-
-  #tv-iframe-header, #game-iframe-header {
-    background: #222; 
-    padding: 6px 12px; 
-    display: flex; 
-    justify-content: flex-end; 
-    gap: 12px; 
-    user-select: none;
-  }
-
-  #tv-iframe-header button, #game-iframe-header button {
-    background: none; 
-    border: none; 
-    color: #eee; 
-    font-size: 20px; 
+.button-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+button {
     cursor: pointer;
-    width: 24px; 
-    height: 24px; 
-    line-height: 24px; 
-    text-align: center; 
-    padding: 0;
-  }
+    border: none;
+    background: linear-gradient(to bottom, #bbb, #888);
+    color: #111;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-shadow: 0 1px 0 #fff;
+    width: 32%;
+    transition: all 0.1s ease;
+    box-shadow: 0 4px #555, inset 0 -2px rgba(255,255,255,0.2);
+}
+button:active, button.active { transform: translateY(4px); box-shadow: 0 2px #555, inset 0 2px rgba(255,255,255,0.2); background: linear-gradient(to bottom, #888, #555); }
 
-  #tv-iframe, #game-iframe {
-    width: 100%; 
-    height: 100%;
-    border: none; 
-    display: block;
-    background: #000;
-  }
+.round-buttons { display: flex; gap: 10px; margin-top: 6px; }
+.round-buttons button { width: 40px; height: 40px; border-radius: 50%; font-size: 18px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
-  .main { 
-    display: flex; 
-    gap: 20px; 
-  }
+.games-list { background: #222; border-radius: 6px; padding: 10px; max-height: 220px; overflow-y: auto; display: none; width: 100%; margin-top: 8px; }
+.games-list ul { list-style: none; margin: 0; padding: 0; }
+.games-list ul li a { color: #84cc16; text-decoration: none; display: block; padding: 4px 0; cursor: pointer; }
 
-  .left-col { 
-    width: 220px; 
-    background: #2b1f47; 
-    padding: 16px; 
-    border-radius: 12px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 15px; 
-  }
+#volnorez_chat { flex-grow: 1; background: transparent !important; }
 
-  .art { 
-    width: 120px; 
-    height: 80px; 
-    background: #111; 
-    border-radius: 8px; 
-    overflow: hidden; 
-    margin-bottom: 8px; 
-  }
+#tv-iframe-container, #game-iframe-container {
+    position: fixed; top: 80px; right: 20px; background: #000;
+    border-radius: 12px; overflow: hidden; display: none; z-index: 10000;
+    flex-direction: column; transition: all 0.2s ease;
+}
+#tv-iframe-header, #game-iframe-header {
+    background: #222; padding: 6px; display: flex; justify-content: flex-end; gap: 6px; position: relative;
+}
+#tv-iframe-header button, #game-iframe-header button { background: none; border: none; color: #eee; font-size: 18px; cursor: pointer; width: 22px; height: 22px; text-align: center; padding: 0; }
+#tv-iframe, #game-iframe { width: 100%; height: 100%; border: none; display: block; background: #000; }
 
-  .title { 
-    font-weight: 700; 
-    font-size: 16px; 
-    margin-bottom: 4px; 
-  }
+#infoOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: none; z-index: 20000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+#infoOverlay.show { display: flex; opacity: 1; }
+#infoContent { background: #111; color: #fff; padding: 20px; border-radius: 12px; width: 80%; max-width: 600px; max-height: 80%; overflow-y: auto; position: relative; }
+#infoContent h2 { margin-top:0; text-align:center; }
+#infoCloseBtn { position: absolute; top:10px; right:10px; background:#444; border:none; color:#fff; width:30px; height:30px; border-radius:50%; font-size:20px; cursor:pointer; }
 
-  .sub { 
-    font-size: 13px; 
-    color: #bdbdbd; 
-    margin-bottom: 12px; 
-  }
+#gameInfoIcon {
+    position: absolute; top:10px; left:10px; cursor:pointer; font-size:18px; color:#eee; z-index:11001;
+}
+#gameHint {
+    position: absolute; top:30px; left:10px;
+    background: rgba(255,255,255,0.9); color:#000; padding: 4px 8px;
+    border-radius:6px; font-size:12px; display:none; z-index:11000;
+}
 
-  .games-header { 
-    border: none; 
-    background: #84cc16; 
-    color: #111; 
-    padding: 8px; 
-    border-radius: 6px; 
-    font-weight: 600; 
-    cursor: pointer; 
-  }
-
-  .games-list { 
-    background: #222; 
-    border-radius: 8px; 
-    padding: 12px; 
-    max-height: 280px; 
-    overflow-y: auto; 
-    display: none; 
-  }
-
-  .games-list ul { 
-    list-style: none; 
-    margin: 0; 
-    padding: 0; 
-  }
-
-  .games-list ul li a { 
-    color: #84cc16; 
-    text-decoration: none; 
-    display: block; 
-    padding: 4px 0; 
-    cursor: pointer; 
-  }
-
-  /* --- Чат (правая колонка) --- */
-  .right-col {
-    flex: 1;
-    background: #1b1136;
-    border-radius: 12px;
-    padding: 12px;
-    height: 400px;
-    min-height: 200px;
-    max-height: 90vh;
-    overflow: hidden;   /* убрали скролл */
-  }
+#footer {
+    position:fixed; bottom:5px; width:100%; text-align:center; font-size:12px; color:#ccc; z-index:1000;
+}
 </style>
 </head>
 <body>
+
 <div class="container">
+    <div class="left-panel">
+        <div class="button-row">
+            <button id="playTvBtn">📺 ТВ</button>
+            <button id="playBtn">▶ Радио</button>
+            <button id="gamesBtn">🎮 Игры</button>
+        </div>
+        <div id="volnorez_chat" data-code="001f69a7" data-skin="skin_4">
+            <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
+        </div>
+        <div class="games-list">
+            <ul>
+                <li><a href="#" data-url="https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/">Gary's World</a></li>
+                <li><a href="#" data-url="https://www.onlinegames.io/games/2021/unity2/crazy-ball-adventures/index.html">Crazy Ball</a></li>
+                <li><a href="#" data-url="https://www.gamenora.com/embed/subway-horror-chapter-1">Subway Horror</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="right-panel">
+        <div class="vu-meter">
+            <div class="vu-col"><canvas id="subbass"></canvas><div class="label">SUB</div></div>
+            <div class="vu-col"><canvas id="midbass"></canvas><div class="label">MID B</div></div>
+            <div class="vu-col"><canvas id="lowmid"></canvas><div class="label">L MID</div></div>
+            <div class="vu-col"><canvas id="mid"></canvas><div class="label">MID</div></div>
+            <div class="vu-col"><canvas id="treble"></canvas><div class="label">TREB</div></div>
+        </div>
+        <div class="round-buttons">
+            <button id="muteBtn">🔈</button>
+            <button id="infoBtn">❓</button>
+        </div>
+    </div>
+</div>
 
-  <div class="player-area">
-    <button id="playBtn" title="Радио">▶ Включить радио</button>
-    <button id="playTvBtn" title="ТВ">Включить ТВ</button>
-  </div>
-
-  <section id="tv-iframe-container">
+<section id="tv-iframe-container">
     <div id="tv-iframe-header">
-      <button id="tvMinimizeBtn">–</button>
-      <button id="tvRestoreBtn" style="display:none;">□</button>
-      <button id="tvCloseBtn">×</button>
+        <button id="tvMinimizeBtn">–</button>
+        <button id="tvRestoreBtn" style="display:none;">□</button>
+        <button id="tvCloseBtn">×</button>
     </div>
     <iframe id="tv-iframe" src="about:blank" allowfullscreen></iframe>
-  </section>
+</section>
 
-  <section id="game-iframe-container">
+<section id="game-iframe-container">
     <div id="game-iframe-header">
-      <button id="gameMinimizeBtn">–</button>
-      <button id="gameRestoreBtn" style="display:none;">□</button>
-      <button id="gameCloseBtn">×</button>
+        <button id="gameMinimizeBtn">–</button>
+        <button id="gameRestoreBtn" style="display:none;">□</button>
+        <button id="gameFullBtn">⛶</button>
+        <button id="gameCloseBtn">×</button>
+        <div id="gameInfoIcon">❓</div>
+        <div id="gameHint">Звук игры отключается в настройках игры</div>
     </div>
     <iframe id="game-iframe" src="about:blank" allowfullscreen></iframe>
-  </section>
+</section>
 
-  <div class="main">
-    <div class="left-col">
-      <div class="art"><canvas id="artSpectrum" width="120" height="80"></canvas></div>
-      <div class="title">Volnorez Radio</div>
-      <div class="sub">Live stream</div>
-      <button class="games-header">СПИСОК ИГР</button>
-      <div class="games-list">
+<div id="infoOverlay">
+    <div id="infoContent">
+        <button id="infoCloseBtn">×</button>
+        <h2>Инструкции по управлению</h2>
         <ul>
-          <li><a href="#" data-url="https://html5.gamemonetize.co/dd5rs8etri5hw51g32sk69qfdoov5tq2/">Gary's World</a></li>
-          <li><a href="#" data-url="https://www.onlinegames.io/games/2021/unity2/crazy-ball-adventures/index.html">Crazy Ball Adventures</a></li>
-          <li><a href="#" data-url="https://www.gamenora.com/embed/subway-horror-chapter-1">Subway Horror</a></li>
+            <li><b>📺 ТВ:</b> Включение/закрытие телевизора (выключает Игры и Радио).</li>
+            <li><b>▶ Радио:</b> Включение/пауза радио (выключает ТВ).</li>
+            <li><b>🎮 Игры:</b> Открывает список игр (закрывает ТВ, но Радио может играть).</li>
+            <li><b>⛶:</b> Развернуть окно игры на весь экран. ESC — возврат.</li>
+            <li><b>– / □:</b> Сворачивание и восстановление окна.</li>
+            <li><b>🔇/🔈:</b> Включение/выключение звука радио.</li>
+            <li><b>❓ в окне игры:</b> Показ подсказки о звуке игры.</li>
+            <li><b>❓ кнопка справа:</b> Открывает это инфо-окно.</li>
+            <li><b>VU-метр:</b> Отображает уровни частот звука.</li>
         </ul>
-      </div>
     </div>
-    <div class="right-col">
-      <div id="volnorez_chat" data-code="001f69a7" data-skin="skin_4" data-skin-params="'panel_clr':'213,213,213','msgbg_clr':'243,243,243'">
-        <script async type="text/javascript" src="//volnorez.com/plugins/jscode/chat_js"></script>
-      </div>
-    </div>
-  </div>
 </div>
+
+<div id="footer">Создатель: NEW-nik-1</div>
 
 <audio id="audio" src="https://stream.volnorez.com/live-app/908925" crossorigin="anonymous"></audio>
 
 <script>
-/* --- Радио, ТВ, Игры (управление) --- */
+// --- ЭЛЕМЕНТЫ
 const playBtn = document.getElementById('playBtn');
 const playTvBtn = document.getElementById('playTvBtn');
+const gamesBtn = document.getElementById('gamesBtn');
 const audio = document.getElementById('audio');
+const muteBtn = document.getElementById('muteBtn');
+const infoBtn = document.getElementById('infoBtn');
+const infoOverlay = document.getElementById('infoOverlay');
+const infoCloseBtn = document.getElementById('infoCloseBtn');
+const gamesList = document.querySelector('.games-list');
 
-const tvIframeContainer = document.getElementById('tv-iframe-container');
+const tvContainer = document.getElementById('tv-iframe-container');
 const tvIframe = document.getElementById('tv-iframe');
 const tvCloseBtn = document.getElementById('tvCloseBtn');
 const tvMinimizeBtn = document.getElementById('tvMinimizeBtn');
 const tvRestoreBtn = document.getElementById('tvRestoreBtn');
+let tvOriginalSize = { width:'500px', height:'400px' };
 
-const gameIframeContainer = document.getElementById('game-iframe-container');
+const gameContainer = document.getElementById('game-iframe-container');
 const gameIframe = document.getElementById('game-iframe');
 const gameCloseBtn = document.getElementById('gameCloseBtn');
+const gameFullBtn = document.getElementById('gameFullBtn');
 const gameMinimizeBtn = document.getElementById('gameMinimizeBtn');
 const gameRestoreBtn = document.getElementById('gameRestoreBtn');
+let gameOriginalSize = { width:'500px', height:'400px', top:'80px', right:'20px' };
 
-const gamesHeaderBtn = document.querySelector('.games-header');
-const gamesList = document.querySelector('.games-list');
+const gameInfoIcon = document.getElementById('gameInfoIcon');
+const gameHint = document.getElementById('gameHint');
 
-let audioCtx, analyser, source, freqData;
-let artCtx, artCanvas, artAnalyser, artFreqData;
+let muted = false;
 
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    source = audioCtx.createMediaElementSource(audio);
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    analyser.fftSize = 1024;
-    freqData = new Uint8Array(analyser.frequencyBinCount);
-  }
-  if (!artCtx) {
-    artCanvas = document.getElementById('artSpectrum');
-    artCtx = artCanvas.getContext('2d');
-    artAnalyser = analyser;
-    artFreqData = freqData;
-  }
-}
-
-function drawArtSpectrum() {
-  requestAnimationFrame(drawArtSpectrum);
-  if (!artAnalyser) return;
-  artAnalyser.getByteFrequencyData(artFreqData);
-  const w = artCanvas.width, h = artCanvas.height;
-  artCtx.clearRect(0, 0, w, h);
-  const count = artFreqData.length / 4;
-  const barWidth = w / count;
-  for (let i = 0; i < count; i++) {
-    const val = artFreqData[i];
-    const barHeight = val * (h / 256);
-    const x = i * barWidth;
-    const y = h - barHeight;
-    const gradient = artCtx.createLinearGradient(0, y, 0, y + barHeight);
-    gradient.addColorStop(0, '#f59e0b');
-    gradient.addColorStop(1, '#84cc16');
-    artCtx.fillStyle = gradient;
-    artCtx.fillRect(x, y, barWidth - 1, barHeight);
-  }
-}
-
-playBtn.addEventListener('click', () => {
-  initAudio();
-  tvIframeContainer.style.display = 'none';
-  tvIframe.src = 'about:blank';
-  if (audio.paused) {
-    audio.play();
-    playBtn.textContent = '⏸ Пауза радио';
-    drawArtSpectrum();
-  } else {
-    audio.pause();
-    playBtn.textContent = '▶ Включить радио';
-  }
-});
-
-playTvBtn.addEventListener('click', () => {
-  if (!audio.paused) {
-    audio.pause();
-    playBtn.textContent = '▶ Включить радио';
-  }
-  gameIframeContainer.style.display = 'none';
-  gameIframe.src = 'about:blank';
-  if (tvIframeContainer.style.display === 'flex') {
-    tvIframeContainer.style.display = 'none';
-    tvIframe.src = 'about:blank';
-  } else {
-    tvIframeContainer.style.display = 'flex';
-    tvIframeContainer.style.height = '587px';
-    tvIframeContainer.style.width = '728px';
-    tvIframe.src = 'https://smotret.tv/';
-  }
-});
-
-tvCloseBtn.onclick = () => {
-  tvIframeContainer.style.display = 'none';
-  tvIframe.src = 'about:blank';
-}
-
-tvMinimizeBtn.onclick = () => {
-  tvIframeContainer.style.height = '40px';
-  tvIframeContainer.style.width = '728px';
-  tvMinimizeBtn.style.display = 'none';
-  tvRestoreBtn.style.display = 'inline-block';
-}
-
-tvRestoreBtn.onclick = () => {
-  tvIframeContainer.style.height = '587px';
-  tvIframeContainer.style.width = '728px';
-  tvRestoreBtn.style.display = 'none';
-  tvMinimizeBtn.style.display = 'inline-block';
-}
-
-gameCloseBtn.onclick = () => {
-  gameIframeContainer.style.display = 'none';
-  gameIframe.src = 'about:blank';
-}
-
-gameMinimizeBtn.onclick = () => {
-  gameIframeContainer.style.height = '40px';
-  gameIframeContainer.style.width = '728px';
-  gameMinimizeBtn.style.display = 'none';
-  gameRestoreBtn.style.display = 'inline-block';
-}
-
-gameRestoreBtn.onclick = () => {
-  gameIframeContainer.style.height = '587px';
-  gameIframeContainer.style.width = '728px';
-  gameRestoreBtn.style.display = 'none';
-  gameMinimizeBtn.style.display = 'inline-block';
-}
-
-gamesHeaderBtn.onclick = () => {
-  gamesList.style.display = (gamesList.style.display === 'block') ? 'none' : 'block';
-};
-
-document.querySelectorAll('.games-list a').forEach(el => {
-  el.onclick = e => {
-    e.preventDefault();
-    if (!audio.paused) {
-      audio.pause();
-      playBtn.textContent = '▶ Включить радио';
-    }
-    tvIframeContainer.style.display = 'none';
-    tvIframe.src = 'about:blank';
-    gameIframeContainer.style.display = 'flex';
-    gameIframeContainer.style.height = '587px';
-    gameIframeContainer.style.width = '728px';
-    gameIframe.src = el.dataset.url;
+// --- Инициализация
+window.addEventListener('DOMContentLoaded', () => {
+    closeTv();
+    closeGame();
     gamesList.style.display = 'none';
-  };
+    playBtn.textContent = '▶ Радио';
+    muteBtn.textContent = '🔈';
+    audio.muted = muted;
+    audio.pause();
 });
+
+// --- Вспомогательные
+function stopRadio(){
+    if(!audio.paused){ audio.pause(); }
+    playBtn.classList.remove('active');
+    playBtn.textContent='▶ Радио';
+}
+function stopTv(){
+    closeTv();
+    playTvBtn.classList.remove('active');
+}
+function closeTv(){ tvContainer.style.display='none'; tvIframe.src='about:blank'; }
+function openTv(){ 
+    tvContainer.style.display='flex'; 
+    tvContainer.style.width=tvOriginalSize.width; 
+    tvContainer.style.height=tvOriginalSize.height; 
+    tvIframe.src='https://smotret.tv/'; 
+}
+function closeGame(){ 
+    if(document.fullscreenElement===gameContainer || document.webkitFullscreenElement===gameContainer){
+        if(document.exitFullscreen) document.exitFullscreen();
+        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+    gameContainer.style.display='none'; 
+    gameIframe.src='about:blank'; 
+    gamesBtn.classList.remove('active'); 
+    gamesBtn.textContent='🎮 Игры';
+}
+
+// --- ТВ
+playTvBtn.addEventListener('click', ()=> {
+    if(tvContainer.style.display==='flex'){ 
+        stopTv();
+    }
+    else { 
+        closeGame(); 
+        stopRadio();
+        openTv(); 
+        playTvBtn.classList.add('active'); 
+    }
+});
+tvCloseBtn.onclick = ()=>{ stopTv(); };
+
+// --- ТВ сворачивание/восстановление
+tvMinimizeBtn.addEventListener('click', () => {
+    tvContainer.style.height = '40px';
+    tvIframe.style.display = 'none';
+    tvMinimizeBtn.style.display = 'none';
+    tvRestoreBtn.style.display = 'inline-block';
+});
+tvRestoreBtn.addEventListener('click', () => {
+    tvContainer.style.height = tvOriginalSize.height;
+    tvIframe.style.display = 'block';
+    tvMinimizeBtn.style.display = 'inline-block';
+    tvRestoreBtn.style.display = 'none';
+});
+
+// --- Игры
+gamesBtn.addEventListener('click', ()=>{ 
+    stopTv();
+    gamesList.style.display = (gamesList.style.display==='block'?'none':'block'); 
+});
+document.querySelectorAll('.games-list a').forEach(el=>{
+    el.onclick = e=>{
+        e.preventDefault();
+        stopTv();
+        gameContainer.style.display='flex';
+        gameContainer.style.width = gameOriginalSize.width;
+        gameContainer.style.height = gameOriginalSize.height;
+        gameContainer.style.top = gameOriginalSize.top;
+        gameContainer.style.right = gameOriginalSize.right;
+        gameIframe.src = el.dataset.url;
+        gamesList.style.display='none';
+        gamesBtn.classList.add('active'); gamesBtn.textContent='🕹 Игры';
+    }
+});
+gameCloseBtn.onclick = ()=>{ closeGame(); };
+
+// --- Игры сворачивание/восстановление
+gameMinimizeBtn.addEventListener('click', () => {
+    gameContainer.style.height = '40px';
+    gameIframe.style.display = 'none';
+    gameMinimizeBtn.style.display = 'none';
+    gameRestoreBtn.style.display = 'inline-block';
+});
+gameRestoreBtn.addEventListener('click', () => {
+    gameContainer.style.height = gameOriginalSize.height;
+    gameIframe.style.display = 'block';
+    gameMinimizeBtn.style.display = 'inline-block';
+    gameRestoreBtn.style.display = 'none';
+});
+
+gameFullBtn.addEventListener('click', ()=>{
+    if(document.fullscreenElement===gameContainer || document.webkitFullscreenElement===gameContainer){
+        if(document.exitFullscreen) document.exitFullscreen();
+        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+        gameContainer.style.width = gameOriginalSize.width;
+        gameContainer.style.height = gameOriginalSize.height;
+        gameContainer.style.top = gameOriginalSize.top;
+        gameContainer.style.right = gameOriginalSize.right;
+    } else {
+        if(gameContainer.requestFullscreen) gameContainer.requestFullscreen();
+        else if(gameContainer.webkitRequestFullscreen) gameContainer.webkitRequestFullscreen();
+    }
+});
+document.addEventListener('fullscreenchange', ()=>{ 
+    if(!document.fullscreenElement){ 
+        gameContainer.style.width=gameOriginalSize.width; 
+        gameContainer.style.height=gameOriginalSize.height; 
+        gameContainer.style.top=gameOriginalSize.top; 
+        gameContainer.style.right=gameOriginalSize.right; 
+    } 
+});
+
+// --- Радио
+playBtn.addEventListener('click', ()=>{
+    audioCtx.resume();
+    if(audio.paused){ 
+        stopTv();
+        audio.play(); 
+        playBtn.classList.add('active'); 
+        playBtn.textContent='⏸ Радио'; 
+    }
+    else { 
+        stopRadio();
+    }
+});
+
+// --- Звук
+muteBtn.addEventListener('click', ()=>{
+    muted = !muted;
+    audio.muted = muted;
+    muteBtn.textContent = muted ? '🔇' : '🔈';
+});
+
+// --- Инфо окно
+infoBtn.addEventListener('click', ()=>{ infoOverlay.classList.add('show'); });
+infoCloseBtn.addEventListener('click', ()=>{ infoOverlay.classList.remove('show'); });
+infoOverlay.addEventListener('click', (e)=>{ if(e.target === infoOverlay){ infoOverlay.classList.remove('show'); } });
+
+// --- Подсказка в игре
+gameInfoIcon.addEventListener('mouseenter', ()=>{ gameHint.style.display='block'; });
+gameInfoIcon.addEventListener('mouseleave', ()=>{ gameHint.style.display='none'; });
+
+// --- VU-метр
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const source = audioCtx.createMediaElementSource(audio);
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 512;
+source.connect(analyser);
+analyser.connect(audioCtx.destination);
+const dataArray = new Uint8Array(analyser.frequencyBinCount);
+const vuCanvases = ['subbass','midbass','lowmid','mid','treble'].map(id=>document.getElementById(id));
+const vuCtx = vuCanvases.map(c=>c.getContext('2d'));
+function drawVU(){
+    requestAnimationFrame(drawVU);
+    if(audio.paused) return;
+    analyser.getByteFrequencyData(dataArray);
+    const bands = [[0,10],[11,30],[31,50],[51,100],[101,200]];
+    bands.forEach((range,i)=>{
+        const avg = range.reduce((sum,v)=>sum+(dataArray[v]||0),0)/range.length;
+        const h = (avg/255)*200;
+        const ctx = vuCtx[i]; const canvas = vuCanvases[i];
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const grad = ctx.createLinearGradient(0,canvas.height,0,0);
+        grad.addColorStop(0,'green'); grad.addColorStop(0.5,'yellow'); grad.addColorStop(1,'red');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0,canvas.height-h,canvas.width,h);
+    });
+}
+drawVU();
 </script>
 </body>
 </html>
